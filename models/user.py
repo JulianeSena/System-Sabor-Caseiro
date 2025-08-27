@@ -11,6 +11,9 @@ class UserModel(banco.Model):
     senha = banco.Column(banco.String(120), nullable=False)
     is_admin = banco.Column(banco.Boolean, default=False, nullable=False)
 
+    # cascade="all, delete-orphan": Se um cliente for deletado, todos os seus cupons também serão.
+    cupons = banco.relationship('CuponModel', backref='cliente', lazy=True, cascade='all, delete-orphan')
+
     def __init__(self, nome, email, telefone, documento, senha, is_admin=False):
         self.nome = nome
         self.email = email
@@ -22,7 +25,9 @@ class UserModel(banco.Model):
     def json(self):
         return {
             'cliente_id': self.cliente_id,
-            'email': self.email
+            'email': self.email,
+            'documento': self.documento,
+            'total_cupons': len(self.cupons) % 10
         }    
 
     @classmethod
