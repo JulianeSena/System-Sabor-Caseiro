@@ -2,6 +2,7 @@ from flask import Flask, jsonify
 from flask_restful import Api, Resource
 from flask_jwt_extended import JWTManager
 from resources.user import User, UserRegister, UserLogin, AdminLogin, UserLogout
+from resources.coupon import Coupon
 from blacklist import BLACKLIST
 from sql_alchemy import banco
 
@@ -19,8 +20,6 @@ app.config['JWT_BLACKLIST_ENABLED'] = True
 
 api = Api(app)
 jwt = JWTManager(app)
-
-# criar o banco de dados
 
 
 @jwt.token_in_blocklist_loader #decorador recebe dois args
@@ -40,6 +39,7 @@ api.add_resource(UserRegister, '/cadastro')
 api.add_resource(UserLogin, '/login/cliente')
 api.add_resource(AdminLogin, '/admin/login')
 api.add_resource(UserLogout, '/logout')
+api.add_resource(Coupon, '/cliente/<int:cliente_id>/cupom')
     
 
 

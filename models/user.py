@@ -31,6 +31,13 @@ class UserModel(banco.Model):
         }    
 
     @classmethod
+    def find_cli_by_name(cls, nome):
+        cliente_nome = cls.query.filter_by(nome=nome).first()
+        if cliente_nome:
+            return cliente_nome
+        return None
+
+    @classmethod
     def find_cli_by_doc(cls, documento):
         cliente_doc = cls.query.filter_by(documento=documento).first() # select * from clientes where documento = $documento 
         if cliente_doc:

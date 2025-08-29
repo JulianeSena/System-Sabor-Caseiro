@@ -6,7 +6,6 @@ from sql_alchemy import banco
 def create_first_admin():
     """Cria o primeiro usuário administrador via linha de comando."""
     with app.app_context():
-        banco.init_app(app)
         banco.create_all()
 
         # Verifica se um administrador já existe
