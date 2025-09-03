@@ -1,4 +1,4 @@
-📱 Sabor Caseiro - Gerenciador de Cartão de Promoções
+📱 Sabor Caseiro App - Gerenciador de Cartão de Promoções 
 Um aplicativo móvel para gerenciar e aproveitar promoções de forma inteligente através de um cartão digital único.
 
 ✨ Funcionalidades Principais
