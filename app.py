@@ -2,7 +2,7 @@ from flask import Flask, jsonify
 from flask_restful import Api, Resource
 from flask_jwt_extended import JWTManager
 from resources.user import User, UserRegister, UserLogin, AdminLogin, UserLogout
-from resources.coupon import Coupon
+from resources.coupon import Coupon, ClientCoupons
 from blacklist import BLACKLIST
 from sql_alchemy import banco
 
@@ -40,6 +40,7 @@ api.add_resource(UserLogin, '/login/cliente')
 api.add_resource(AdminLogin, '/admin/login')
 api.add_resource(UserLogout, '/logout')
 api.add_resource(Coupon, '/cliente/<int:cliente_id>/cupom')
+api.add_resource(ClientCoupons, '/cliente/<int:cliente_id>/cupons')
     
 
 
