@@ -47,9 +47,9 @@ class UserModel(banco.Model):
 
     @classmethod
     def find_cli_by_id(cls, cliente_id):
-        cliente_id = cls.query.filter_by(cliente_id=cliente_id).first()
-        if cliente_id:
-            return cliente_id
+        cliente = cls.query.filter_by(cliente_id=cliente_id).first()
+        if cliente:
+            return cliente
         return None
 
 

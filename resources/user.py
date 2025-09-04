@@ -22,12 +22,17 @@ def admin_required():
 
 
 class User(Resource):
+    parser = reqparse.RequestParser()
+    parser.add_argument('nome', type=str, help="O campo 'nome' não pode ser nulo.")
+    parser.add_argument('email', type=str, help="O campo 'email' não pode ser nulo.")
+    parser.add_argument('telefone', type=int, help="O campo 'telefone' não pode ser nulo.")
+    parser.add_argument('senha', type=str, help="O campo 'senha' não pode ser nulo.")
+
     @jwt_required()
-    def get(self, cliente_id):
+    def get(self, cliente_id): # lista os clientes
         current_user_id = get_jwt_identity()
         claims = get_jwt()
 
-        # Um administrador pode ver qualquer usuário, um cliente só pode ver a si mesmo.
         if not (claims.get('is_admin') or str(cliente_id) == str(current_user_id)):
             return {'message': 'Acesso não autorizado.'}, 403
 
@@ -36,15 +41,44 @@ class User(Resource):
             return cliente.json()
         return {'message': 'Cliente não foi encontrado'}, 404
 
-    @admin_required()
+    @jwt_required()
+    def put(self, cliente_id): # atualizar os dados dos clientes
+        current_user_id = get_jwt_identity()
+        claims = get_jwt()
+
+        # Um administrador pode editar qualquer usuário, um cliente só pode editar a si mesmo.
+        if not (claims.get('is_admin') or str(cliente_id) == str(current_user_id)):
+            return {'message': 'Acesso não autorizado para editar este usuário.'}, 403
+
+        cliente = UserModel.find_cli_by_id(cliente_id)
+        if not cliente:
+            return {'message': 'Cliente não encontrado.'}, 404
+
+        dados = User.parser.parse_args()
+        dados_validos = {chave: valor for chave, valor in dados.items() if valor is not None}
+
+        if not dados_validos:
+            return {'message': 'Nenhum dado fornecido para atualização.'}, 400
+
+        for chave, valor in dados_validos.items():
+            setattr(cliente, chave, valor)
+
+        try:
+            cliente.save_client()
+        except Exception as e:
+            return {'message': f"Ocorreu um erro interno ao tentar atualizar o cliente: {e}"}, 500
+        
+        return cliente.json(), 200
+
+    @admin_required() # deletar dados dos clientes
     def delete(self, cliente_id):
         cliente = UserModel.find_cli_by_id(cliente_id)
         if cliente:
             try:
                 cliente.delete_user()
-            except:
-                return {'message': "Ocorreu um erro interno tentando deletar o cliente"}, 500
-            return {'message': "Cliente deletado"}
+            except Exception as e:
+                return {'message': f"Ocorreu um erro interno ao tentar deletar o cliente: {e}"}, 500
+            return {'message': "Cliente deletado com sucesso."}, 200
         return {'message': "Cliente não encontrado"}, 404    
     
 
