@@ -2,7 +2,7 @@ from flask import Flask, jsonify
 from flask_restful import Api, Resource
 from flask_jwt_extended import JWTManager
 from resources.user import User, UserRegister, UserLogin, AdminLogin, UserLogout
-from resources.coupon import Coupon
+from resources.coupon import Coupon, ClientCoupons
 from blacklist import BLACKLIST
 from sql_alchemy import banco
 
@@ -34,13 +34,14 @@ def token_acess_invalid():
     return jsonify({'message': "Voce foi deslogado da sua conta"}), 401
 
 
-api.add_resource(User, '/cliente/<int:cliente_id>')
-api.add_resource(UserRegister, '/cadastro')
-api.add_resource(UserLogin, '/login/cliente')
-api.add_resource(AdminLogin, '/admin/login')
-api.add_resource(UserLogout, '/logout')
-api.add_resource(Coupon, '/cliente/<int:cliente_id>/cupom')
-    
+api.add_resource(User, '/cliente/<int:cliente_id>') #editar clientes - listar, atualizar, deletar
+api.add_resource(UserRegister, '/cadastro') # registrar cliente
+api.add_resource(UserLogin, '/login/cliente') # login cliente
+api.add_resource(UserLogout, '/logout') # cliente logout
+api.add_resource(AdminLogin, '/admin/login') # adm login
+api.add_resource(Coupon, '/cliente/<int:cliente_id>/cupom') # add cupoum para cliente
+api.add_resource(ClientCoupons, '/cliente/<int:cliente_id>/cupons') # endpoint de visualizacao de cupom, se for cliente ira visualizar apenas os seus cupons
+
 
 
 
