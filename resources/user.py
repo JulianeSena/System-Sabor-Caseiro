@@ -13,12 +13,25 @@ def admin_required():
         def decorator(*args, **kwargs):
             verify_jwt_in_request()
             claims = get_jwt()
-            if claims.get('is_admin'):
+            if claims.get('role') == 'admin':
                 return fn(*args, **kwargs)
             return {'message': 'Acesso restrito a administradores.'}, 403
         return decorator
     return wrapper
 
+# Decorador para endpoints que exigem privilégios de gerente ou administrador
+def manager_required():
+    def wrapper(fn):
+        @wraps(fn)
+        def decorator(*args, **kwargs):
+            verify_jwt_in_request()
+            claims = get_jwt()
+            # Permite acesso se a role for 'gerente' ou 'admin'
+            if claims.get('role') in ['gerente', 'admin']:
+                return fn(*args, **kwargs)
+            return {'message': 'Acesso restrito a gerentes ou administradores.'}, 403
+        return decorator
+    return wrapper
 
 
 class User(Resource):
@@ -33,7 +46,8 @@ class User(Resource):
         current_user_id = get_jwt_identity()
         claims = get_jwt()
 
-        if not (claims.get('is_admin') or str(cliente_id) == str(current_user_id)):
+        # Admin pode ver todos, cliente só pode ver a si mesmo. Gerente não acessa este endpoint.
+        if not (claims.get('role') == 'admin' or str(cliente_id) == str(current_user_id)):
             return {'message': 'Acesso não autorizado.'}, 403
 
         cliente = UserModel.find_cli_by_id(cliente_id)
@@ -47,7 +61,7 @@ class User(Resource):
         claims = get_jwt()
 
         # Um administrador pode editar qualquer usuário, um cliente só pode editar a si mesmo.
-        if not (claims.get('is_admin') or str(cliente_id) == str(current_user_id)):
+        if not (claims.get('role') == 'admin' or str(cliente_id) == str(current_user_id)):
             return {'message': 'Acesso não autorizado para editar este usuário.'}, 403
 
         cliente = UserModel.find_cli_by_id(cliente_id)
@@ -90,18 +104,17 @@ class UserRegister(Resource):
     atribuicao.add_argument('telefone', type=int, required=True, help="O campo 'telefone' não pode ser deixado em branco")
     atribuicao.add_argument('documento', type=str, required=True, help="O campo 'CPF' não pode ser deixado em branco" )
     atribuicao.add_argument('senha', type=str, required=True, help="O campo 'senha' não pode ser deixado em branco" )
-    atribuicao.add_argument('is_admin', type=bool, help="Define se o usuário é um administrador.")
+    atribuicao.add_argument('role', type=str, default='cliente', help="Define a função do usuário (cliente, gerente, admin).")
     
     @admin_required()
     def post(self):
         dados = self.atribuicao.parse_args()
 
+        if dados['role'] not in ['cliente', 'gerente', 'admin']:
+            return {'message': "A função '{}' é inválida.".format(dados['role'])}, 400
+
         if UserModel.find_cli_by_doc(dados['documento']):
             return {'message': "O documento '{}' ja existe no sistema".format(dados['documento'])}  
-        
-        # Garante que o campo is_admin seja booleano
-        if dados.get('is_admin') is None:
-            dados['is_admin'] = False
 
         cliente = UserModel(**dados)
         cliente.save_client()
@@ -120,10 +133,10 @@ class UserLogin(Resource):
         cliente = UserModel.find_cli_by_doc(dados['documento'])
 
         # Este endpoint é para clientes (não administradores)
-        if cliente and not cliente.is_admin and compare_digest(cliente.senha, dados['senha']):
+        if cliente and cliente.role == 'cliente' and compare_digest(cliente.senha, dados['senha']):
             token_de_acesso = create_access_token(
                 identity=str(cliente.cliente_id),
-                additional_claims={'is_admin': False}
+                additional_claims={'role': 'cliente'}
             )
             return {'acess_token': token_de_acesso}, 200
         return {'message': "Documento ou senha Incorreto"}, 401
@@ -140,9 +153,12 @@ class AdminLogin(Resource):
 
         admin = UserModel.find_cli_by_name(dados['nome'])
 
-        # Este endpoint é apenas para administradores
-        if admin and admin.is_admin and compare_digest(admin.senha, dados['senha']):
-            token_de_acesso = create_access_token(identity=str(admin.cliente_id), additional_claims={'is_admin': True})
+        # Este endpoint é para administradores e gerentes
+        if admin and admin.role in ['admin', 'gerente'] and compare_digest(admin.senha, dados['senha']):
+            token_de_acesso = create_access_token(
+                identity=str(admin.cliente_id),
+                additional_claims={'role': admin.role}
+            )
             return {'acess_token': token_de_acesso}, 200
         return {'message': "Nome de administrador ou senha inválidos."}, 401
 

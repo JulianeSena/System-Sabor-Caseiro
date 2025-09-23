@@ -9,26 +9,35 @@ class UserModel(banco.Model):
     telefone = banco.Column(banco.Integer, unique=True, nullable=False)
     documento = banco.Column(banco.String(11), unique=True, nullable=False)
     senha = banco.Column(banco.String(120), nullable=False)
-    is_admin = banco.Column(banco.Boolean, default=False, nullable=False)
+    role = banco.Column(banco.String(20), default='cliente', nullable=False) # 'cliente', 'gerente', 'admin'
 
     # cascade="all, delete-orphan": Se um cliente for deletado, todos os seus cupons também serão.
     cupons = banco.relationship('CuponModel', backref='cliente', lazy=True, cascade='all, delete-orphan')
 
-    def __init__(self, nome, email, telefone, documento, senha, is_admin=False):
+    def __init__(self, nome, email, telefone, documento, senha, role='cliente'):
         self.nome = nome
         self.email = email
         self.telefone = telefone
         self.documento = documento
         self.senha = senha
-        self.is_admin = is_admin
+        self.role = role
 
     def json(self):
+        total_de_cupons = len(self.cupons)
+        cupons_no_cartao_atual = total_de_cupons % 10
+        cupons_para_proximo_desconto = 10 - cupons_no_cartao_atual
+        if cupons_para_proximo_desconto == 10:
+            cupons_para_proximo_desconto = 0 # Se acabou de completar, não falta nenhum para o desconto atual
+
         return {
             'cliente_id': self.cliente_id,
+            'nome': self.nome,
             'email': self.email,
-            'documento': self.documento,
-            'total_cupons': len(self.cupons) % 10
-        }    
+            'cupons_total': total_de_cupons,
+            'cupons_cartao_atual': cupons_no_cartao_atual,
+            'cupons_para_proximo_desconto': cupons_para_proximo_desconto,
+            'descontos_disponiveis': total_de_cupons // 10
+        }
 
     @classmethod
     def find_cli_by_name(cls, nome):

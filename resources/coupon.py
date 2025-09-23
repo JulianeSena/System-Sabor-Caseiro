@@ -43,7 +43,7 @@ class ClientCoupons(Resource):
         claims = get_jwt()
 
         # Verifica se o usuário logado é admin ou se está tentando acessar seus próprios cupons
-        if not (claims.get('is_admin') or str(cliente_id) == str(current_user_id)):
+        if not (claims.get('role') == 'admin' or str(cliente_id) == str(current_user_id)):
             return {'message': 'Acesso não autorizado.'}, 403
 
         cliente = UserModel.find_cli_by_id(cliente_id)

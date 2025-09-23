@@ -9,7 +9,7 @@ def create_first_admin():
         banco.create_all()
 
         # Verifica se um administrador já existe
-        if UserModel.query.filter_by(is_admin=True).first():
+        if UserModel.query.filter_by(role='admin').first():
             print("Um administrador já existe no sistema.")
             return
 
@@ -27,7 +27,7 @@ def create_first_admin():
 
         admin_user = UserModel(
             nome=nome, email=email, telefone=int(telefone),
-            documento=documento, senha=senha, is_admin=True
+            documento=documento, senha=senha, role='admin'
         )
         try:
             admin_user.save_client()
