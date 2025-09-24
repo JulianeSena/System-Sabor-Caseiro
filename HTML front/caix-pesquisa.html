@@ -17,7 +17,7 @@
             <div class="direita">
                 <div class="user-info">
                     <h3>Bem Vindo!<br>Caixa</h3>
-                    <button class="botao-logoff">Sair</button>
+                    <button class="botao-logoff" id="btn-sair">Sair</button>
                 </div>
                 <img src="avatar.png" class="avatar"/>
             </div>
@@ -35,29 +35,132 @@
             </div>
 
             <!-- Campos de cadastro -->
-            <div class="pesquisa">
-                <div class="campo-horizontal">
-                    <label for="cpf">CPF:</label>
-                    <input type="text" id="cpf" value="000.000.000-00" class="input-pesquisa"/>
+            <form  id="form-cliente">
+                <div class="pesquisa">
+                    <div class="campo-horizontal">
+                        <label for="documento">CPF:</label>
+                        <input type="text" id="documento" placeholder="000.000.000-00" class="input-pesquisa" readonly/>
+                    </div>
+                    <div class="campo-horizontal">
+                        <label for="email">Email:</label>
+                        <input type="text" id="email" placeholder="vera@email.com" class="input-pesquisa"/>
+                    </div>
+                    <div class="campo-horizontal">
+                        <label for="telefone">Telefone:</label>
+                        <input type="text" id="telefone" placeholder="(53) 99999-0000" class="input-pesquisa"/>
+                    </div>
                 </div>
-                <div class="campo-horizontal">
-                    <label for="email">Email:</label>
-                    <input type="text" id="email" value="vera@email.com" class="input-pesquisa"/>
-                </div>
-                <div class="campo-horizontal">
-                    <label for="telefone">Telefone:</label>
-                    <input type="text" id="telefone" value="(53) 99999-0000" class="input-pesquisa"/>
-                </div>
-            </div>
+            </form>
 
             <!-- Botões inferiores -->
             <div class="botoes">
-                <button class="botao-cinza">Voltar</button>
-                <button class="botao-cinza">Atualizar Dados</button>
-                <button class="botao-cinza">Cadastrar Compra</button>
-                <button class="botao-cupom">Cupom Fidelidade</button>
+                <button id="btn-voltar" class="botao-cinza">Voltar</button>
+                <button id="btn-atualizar" class="botao-cinza">Atualizar Dados</button>
+                <button id="btn-cadastrar-compra" class="botao-cinza">Cadastrar Compra</button>
+                <button id="btn-cupom" class="botao-cupom" disabled>Cupom Fidelidade</button>
             </div>
         </div>
     </div>
+
+    <script>
+        // Função para buscar e preencher os dados do cliente na tela
+        async function carregarDadosCliente() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const clienteId = urlParams.get('id');
+            const token = localStorage.getItem('acess_token');
+
+            if (!clienteId || !token) {
+                alert('Cliente não especificado ou erro de autenticação.');
+                window.location.href = 'caix-principal.html'; // Volta para a pesquisa
+                return;
+            }
+
+            const API_URL = 'http://127.0.0.1:5000';
+
+            try {
+                // 1. Buscar dados do cliente
+                const resCliente = await fetch(`${API_URL}/cliente/${clienteId}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (!resCliente.ok) throw new Error('Falha ao buscar dados do cliente.');
+                const cliente = await resCliente.json();
+
+                // 2. Buscar cupons (compras) do cliente
+                const resCupons = await fetch(`${API_URL}/cliente/${clienteId}/cupons`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (!resCupons.ok) throw new Error('Falha ao buscar cupons do cliente.');
+                const { cupons } = await resCupons.json();
+
+                // 3. Preencher a página com os dados
+                document.querySelector('.nome-cliente').textContent = cliente.nome;
+                document.getElementById('documento').value = cliente.documento;
+                document.getElementById('email').value = cliente.email;
+                document.getElementById('telefone').value = cliente.telefone;
+
+                // 4. Atualizar o plano fidelidade (assumindo 10 compras para o cupom)
+                const totalCupons = cupons.length % 10;
+                document.querySelector('.celula-plano').textContent = `${totalCupons}/10`;
+                if (totalCupons === 0 && cupons.length > 0) {
+                    document.getElementById('btn-cupom').disabled = false; // Habilita o botão de cupom
+                }
+
+            } catch (error) {
+                alert(error.message);
+                console.error('Erro:', error);
+            }
+        }
+
+        // Adiciona os eventos aos botões
+        document.addEventListener('DOMContentLoaded', () => {
+            carregarDadosCliente(); // Carrega os dados assim que a página é aberta
+
+            const urlParams = new URLSearchParams(window.location.search);
+            const clienteId = urlParams.get('id');
+            const token = localStorage.getItem('acess_token');
+            const API_URL = 'http://127.0.0.1:5000';
+
+            // Botão Voltar
+            document.getElementById('btn-voltar').addEventListener('click', () => window.history.back());
+
+            // Botão Sair
+            document.getElementById('btn-sair').addEventListener('click', () => {
+                localStorage.removeItem('acess_token');
+                window.location.href = 'login-admin.html';
+            });
+
+            // Botão Cadastrar Compra - aqui ele coloca um evento na tela que o caixa digita o valor do cupom e joga no banco
+            document.getElementById('btn-cadastrar-compra').addEventListener('click', async () => {
+                const preco = prompt("Digite o valor da compra (ex: 45.50):");
+                if (preco && !isNaN(parseFloat(preco))) {
+                    const res = await fetch(`${API_URL}/cliente/${clienteId}/cupom`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                        body: JSON.stringify({ preco_cupom: parseFloat(preco) })
+                    });
+                    const result = await res.json();
+                    alert(res.ok ? 'Compra cadastrada com sucesso!' : `Erro: ${result.message}`);
+                    if (res.ok) location.reload(); // Recarrega a página para atualizar os dados
+                } else if (preco) {
+                    alert("Valor inválido. Por favor, insira um número.");
+                }
+            });
+
+            // Botão Atualizar Dados
+            document.getElementById('btn-atualizar').addEventListener('click', async () => {
+                const email = document.getElementById('email').value;
+                const telefone = document.getElementById('telefone').value;
+
+                const res = await fetch(`${API_URL}/cliente/${clienteId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                    body: JSON.stringify({ email, telefone })
+                });
+                const result = await res.json();
+                alert(res.ok ? 'Dados atualizados com sucesso!' : `Erro: ${result.message}`);
+                if (res.ok) carregarDadosCliente();
+            });
+        });
+    </script>
 </body>
 </html>
