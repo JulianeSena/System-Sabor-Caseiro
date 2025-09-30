@@ -73,8 +73,6 @@
                 }
 
                 try {
-                    // A API espera um POST para o login, que retorna os dados do usuário se o documento existir.
-                    // Usaremos este endpoint para "buscar" o cliente pelo documento.
                     const response = await fetch(`${API_URL}/cliente/busca`, {
                         method: 'POST',
                         headers: {

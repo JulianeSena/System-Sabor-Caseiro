@@ -17,7 +17,7 @@
             <div class="direita">
                 <div class="user-info">
                     <h3>Bem Vindo!<br>Caixa</h3>
-                    <button class="botao-logoff">Sair</button>
+                    <button class="botao-logoff" id="btn-sair">Sair</button>
                 </div>
                 <img src="/HTML front/Image/avatar.png" class="avatar"/>
             </div>
@@ -51,8 +51,8 @@
                 </div>
 
                 <div class="botoes">
-                    <button class="botao-cinza">Voltar</button>
-                    <button type="submit" class="botao-cinza">Cadastrar</button>
+                    <button type="button" id="btn-voltar" class="botao-cinza">Voltar</button>
+                    <button type="submit" class="botao-cinza" id="btn-cadastrar">Cadastrar</button>
                 </div>
             </form>     
         </div>
@@ -66,7 +66,7 @@
             const nome = document.getElementById('nome').value;
             const email = document.getElementById('email').value;
             const telefone = document.getElementById('telefone').value.replace(/\D/g, ''); // Remove caracteres não numéricos do telefone
-            const documento = document.getElementById('documento').value.replace(/\D/g, ''); // Remove pontos e traço do CPF
+            const documento = document.getElementById('cpf').value.replace(/\D/g, ''); // CORRIGIDO: id do campo é 'cpf'
             const senha = document.getElementById('senha').value;
 
             // Recupera o token de acesso do localStorage (assumindo que foi salvo lá no login)
@@ -74,6 +74,7 @@
 
             if (!token) {
                 alert('Erro de autenticação. Faça o login novamente.');
+                window.location.href = 'caixa_login.html';
                 return;
             }
 
@@ -91,9 +92,8 @@
 
                 if (response.ok) {
                     alert('Cliente cadastrado com sucesso!');
-                    document.getElementById('cadastro-form').reset(); // Limpa o formulário
-                    // Opcional: redirecionar para outra página, como a de pesquisa.
-                    // window.location.href = 'caix-pesquisa.html';
+                    // Redireciona para a página de pesquisa principal após o cadastro
+                    window.location.href = 'caix-principal.html';
                 } else {
                     // Exibe a mensagem de erro retornada pela API
                     alert(`Erro ao cadastrar: ${result.message}`);
@@ -102,6 +102,17 @@
                 console.error('Erro na requisição:', error);
                 alert('Ocorreu um erro de comunicação com o servidor. Tente novamente.');
             }
+        });
+
+        // Funcionalidade do botão Voltar
+        document.getElementById('btn-voltar').addEventListener('click', () => {
+            window.history.back(); // Volta para a página anterior
+        });
+
+        // Funcionalidade do botão Sair
+        document.getElementById('btn-sair').addEventListener('click', () => {
+            localStorage.removeItem('acess_token');
+            window.location.href = 'caixa_login.html';
         });
     </script>
 </body>

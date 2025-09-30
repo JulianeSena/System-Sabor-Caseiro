@@ -27,22 +27,9 @@ def manager_required():
             verify_jwt_in_request()
             claims = get_jwt()
             # Permite acesso se a role for 'gerente' ou 'admin'
-            if claims.get('role') in ['gerente', 'admin']:
+            if claims.get('role') in ['gerente']:
                 return fn(*args, **kwargs)
             return {'message': 'Acesso restrito a gerentes ou administradores.'}, 403
-        return decorator
-    return wrapper
-
-# Decorador para endpoints que exigem privilégios de caixa, gerente ou administrador
-def cashier_required():
-    def wrapper(fn):
-        @wraps(fn)
-        def decorator(*args, **kwargs):
-            verify_jwt_in_request()
-            claims = get_jwt()
-            if claims.get('role') in [ 'gerente', 'admin']:
-                return fn(*args, **kwargs)
-            return {'message': 'Acesso restrito à equipe autorizada.'}, 403
         return decorator
     return wrapper
 
@@ -50,43 +37,53 @@ class User(Resource):
     parser = reqparse.RequestParser()
     parser.add_argument('nome', type=str, help="O campo 'nome' não pode ser nulo.")
     parser.add_argument('email', type=str, help="O campo 'email' não pode ser nulo.")
-    parser.add_argument('telefone', type=int, help="O campo 'telefone' não pode ser nulo.")
+    parser.add_argument('telefone', type=str, help="O campo 'telefone' não pode ser nulo.")
     parser.add_argument('senha', type=str, help="O campo 'senha' não pode ser nulo.")
-
-    @cashier_required()
-    def get(self, cliente_id): # lista os clientes
+    parser.add_argument('documento', type=str, help="O campo 'documento' não pode ser nulo.")
+    
+    @jwt_required()
+    def get(self, cliente_id):
         current_user_id = get_jwt_identity()
         claims = get_jwt()
-
-        # Admin, Gerente podem ver qualquer cliente. 
-        if claims.get('role') == 'cliente' and str(cliente_id) != str(current_user_id):
+        
+        # Permite que admin/gerente vejam qualquer cliente, e que um cliente veja a si mesmo.
+        if claims.get('role') not in ['admin', 'gerente'] and str(cliente_id) != str(current_user_id):
             return {'message': 'Acesso não autorizado.'}, 403
-
+        
         cliente = UserModel.find_cli_by_id(cliente_id)
         if cliente:
             return cliente.json()
         return {'message': 'Cliente não foi encontrado'}, 404
 
-    @cashier_required()
+    @jwt_required()
     def put(self, cliente_id): # atualizar os dados dos clientes
         current_user_id = get_jwt_identity()
         claims = get_jwt()
         
-        # Admin, Gerente podem editar qualquer cliente. Cliente só pode editar a si mesmo.
-        if claims.get('role') == 'cliente' and str(cliente_id) != str(current_user_id):
-            return {'message': 'Acesso não autorizado para editar este usuário.'}, 403
+        # Admin e Gerente podem editar qualquer cliente. Cliente só pode editar a si mesmo.
+        allowed_roles = ['admin', 'gerente'] 
+        if claims.get('role') not in allowed_roles and str(cliente_id) != str(current_user_id):
+            return {'message': 'Acesso não autorizado.'}, 403
 
         cliente = UserModel.find_cli_by_id(cliente_id)
         if not cliente:
             return {'message': 'Cliente não encontrado.'}, 404
 
-        dados = User.parser.parse_args()
-        dados_validos = {chave: valor for chave, valor in dados.items() if valor is not None}
+        # Cria um parser específico para o PUT, que não exige todos os campos
+        put_parser = reqparse.RequestParser()
+        put_parser.add_argument('nome', type=str)
+        put_parser.add_argument('email', type=str)
+        put_parser.add_argument('telefone', type=str)
+        put_parser.add_argument('senha', type=str)
+        dados = put_parser.parse_args()
 
-        if not dados_validos:
+        # Filtra apenas os argumentos que foram realmente enviados na requisição
+        dados_para_atualizar = {chave: valor for chave, valor in dados.items() if valor is not None}
+
+        if not dados_para_atualizar:
             return {'message': 'Nenhum dado fornecido para atualização.'}, 400
 
-        for chave, valor in dados_validos.items():
+        for chave, valor in dados_para_atualizar.items():
             setattr(cliente, chave, valor)
 
         try:
@@ -113,18 +110,17 @@ class UserRegister(Resource):
     atribuicao = reqparse.RequestParser()
     atribuicao.add_argument('nome', type=str, required=True, help="O campo 'nome' não pode ser deixado em branco")
     atribuicao.add_argument('email', type=str, required=True, help="O campo 'email' não pode ser deixado em branco" )
-    atribuicao.add_argument('telefone', type=int, required=True, help="O campo 'telefone' não pode ser deixado em branco")
+    atribuicao.add_argument('telefone', type=str, required=True, help="O campo 'telefone' não pode ser deixado em branco")
     atribuicao.add_argument('documento', type=str, required=True, help="O campo 'CPF' não pode ser deixado em branco" )
     atribuicao.add_argument('senha', type=str, required=True, help="O campo 'senha' não pode ser deixado em branco" )
     atribuicao.add_argument('role', type=str, default='cliente', help="Define a função do usuário (cliente, gerente, admin).")
     
-    @cashier_required()
+    @admin_required()
     def post(self):
         dados = self.atribuicao.parse_args()
-        claims = get_jwt()
 
-        # Admins/Gerentes podem definir outras roles.
-
+        # Apenas Admins/Gerentes podem definir outras roles.
+        # O cadastro via este endpoint, por um admin, é para clientes.
         if dados['role'] not in ['cliente', 'gerente', 'admin']:
             return {'message': "A função '{}' é inválida.".format(dados['role'])}, 400
 
@@ -168,7 +164,7 @@ class AdminLogin(Resource):
 
         admin = UserModel.find_cli_by_name(dados['nome'])
 
-        # Este endpoint é para admin e gerentes
+        # Este endpoint é para admin e gerentes.
         if admin and admin.role in ['admin', 'gerente'] and compare_digest(admin.senha, dados['senha']):
             token_de_acesso = create_access_token(
                 identity=str(admin.cliente_id),
@@ -188,7 +184,7 @@ class UserSearch(Resource):
     parser = reqparse.RequestParser()
     parser.add_argument('documento', type=str, required=True, help="O campo 'documento' não pode ser nulo.")
 
-    @cashier_required()
+    @admin_required()
     def post(self):
         dados = self.parser.parse_args()
         

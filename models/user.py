@@ -6,7 +6,7 @@ class UserModel(banco.Model):
     cliente_id = banco.Column(banco.Integer, primary_key=True)
     nome = banco.Column(banco.String(40), unique=True, nullable=False)
     email = banco.Column(banco.String(60), unique=True, nullable=False)
-    telefone = banco.Column(banco.Integer, unique=True, nullable=False)
+    telefone = banco.Column(banco.String(20), unique=True, nullable=False)
     documento = banco.Column(banco.String(11), unique=True, nullable=False)
     senha = banco.Column(banco.String(120), nullable=False)
     role = banco.Column(banco.String(20), default='cliente', nullable=False) # 'cliente', 'gerente', 'admin'
@@ -33,6 +33,8 @@ class UserModel(banco.Model):
             'cliente_id': self.cliente_id,
             'nome': self.nome,
             'email': self.email,
+            'telefone': self.telefone,
+            'documento': self.documento,
             'cupons_total': total_de_cupons,
             'cupons_cartao_atual': cupons_no_cartao_atual,
             'cupons_para_proximo_desconto': cupons_para_proximo_desconto,

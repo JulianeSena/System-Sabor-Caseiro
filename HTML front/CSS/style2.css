@@ -122,6 +122,9 @@ body {
     gap: 12px;
     margin-top: 20px;
 }
+#texto-desconto {
+    background-color: #201F17;
+}
 
 .result h2 {
     font-size: 2.5rem;
@@ -152,14 +155,25 @@ td {
     padding: 10px;
 }
 
+footer {
+    width: 100%;
+    padding: 20px 0;
+    margin-top: auto; /* Empurra o rodapé para o final da página */
+    text-align: center;
+}
+
 .canais {
     display: flex;
-    gap: 700px;
-    justify-content: center;
-    padding-top: 200px;
+    justify-content: space-evenly; /* Distribui o espaço igualmente */
+    align-items: flex-start;
+    width: 80%;
+    margin: 0 auto; /* Centraliza a div .canais */
+    gap: 20px; /* Espaço entre as colunas de endereço e telefone */
+    flex-wrap: wrap; /* Permite que o conteúdo quebre a linha em telas menores */
 }
 
 .canais h4 {
     color: #fff;
-    font-size: 20px;
+    font-size: 1rem; /* Tamanho de fonte mais consistente */
+    line-height: 1.5; /* Melhora a legibilidade */
 }
