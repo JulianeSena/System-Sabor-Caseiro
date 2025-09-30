@@ -24,6 +24,11 @@
         </div>
 
         <div class="corpo">
+            <div id="promocao-banner" class="promocao-banner" style="display: none;">
+                <h3 id="promocao-titulo"></h3>
+                <p id="promocao-descricao"></p>
+            </div>
+
             <h2>Pesquisa de Cliente</h2>
 
             <div class="pesquisa">
@@ -49,6 +54,29 @@
                 alert('Sessão expirada. Por favor, faça o login novamente.');
                 window.location.href = 'caixa_login.html'; // Ou a página de login correta
             }
+
+            // Função para buscar e exibir a promoção ativa
+            async function carregarPromocaoAtiva() {
+                try {
+                    const response = await fetch(`${API_URL}/promocoes/ativas`, {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    if (!response.ok) return; // Falha silenciosamente se não conseguir buscar
+
+                    const data = await response.json();
+                    const promocaoAtiva = data.promocoes_ativas && data.promocoes_ativas[0]; // Pega a primeira promoção ativa, se existir
+
+                    if (promocaoAtiva) {
+                        document.getElementById('promocao-titulo').textContent = `PROMOÇÃO ATIVA: ${promocaoAtiva.titulo}`;
+                        document.getElementById('promocao-descricao').textContent = promocaoAtiva.descricao;
+                        document.getElementById('promocao-banner').style.display = 'block';
+                    }
+
+                } catch (error) {
+                    console.error('Erro ao carregar promoção:', error);
+                }
+            }
+
 
             // Botão Sair (Logout)
             document.getElementById('btn-sair').addEventListener('click', () => {
@@ -95,6 +123,9 @@
                     alert('Ocorreu um erro de comunicação com o servidor.');
                 }
             });
+
+            // Carrega a promoção ativa ao iniciar a página
+            carregarPromocaoAtiva();
         });
     </script>
 </body>

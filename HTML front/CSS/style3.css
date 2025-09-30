@@ -192,3 +192,25 @@ body {
     transform: translateY(-2px);
     box-shadow: 0 8px 20px rgba(0,0,0,0.3);
 }
+
+.promocao-banner {
+    width: 95%;
+    background: linear-gradient(135deg, #FFD400, #FF0000);
+    color: white;
+    padding: 15px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    text-align: center;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+}
+
+.promocao-banner h3 {
+    margin: 0 0 5px 0;
+    font-size: 1.4rem;
+    text-transform: uppercase;
+}
+
+.promocao-banner p {
+    margin: 0;
+    font-size: 1rem;
+}

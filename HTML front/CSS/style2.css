@@ -158,22 +158,128 @@ td {
 footer {
     width: 100%;
     padding: 20px 0;
-    margin-top: auto; /* Empurra o rodapé para o final da página */
+    margin-top: auto; 
     text-align: center;
 }
 
 .canais {
     display: flex;
-    justify-content: space-evenly; /* Distribui o espaço igualmente */
+    justify-content: space-evenly;
     align-items: flex-start;
     width: 80%;
-    margin: 0 auto; /* Centraliza a div .canais */
-    gap: 20px; /* Espaço entre as colunas de endereço e telefone */
-    flex-wrap: wrap; /* Permite que o conteúdo quebre a linha em telas menores */
+    margin: 0 auto; 
+    gap: 20px; 
+    flex-wrap: wrap; 
 }
 
 .canais h4 {
     color: #fff;
-    font-size: 1rem; /* Tamanho de fonte mais consistente */
-    line-height: 1.5; /* Melhora a legibilidade */
+    font-size: 1rem; 
+    line-height: 1.5; 
+}
+
+.promocoes-container {
+    width: 100%;
+    max-width: 800px;
+    margin-top: 30px;
+    color: #fff;
+}
+
+.promocoes-container h3 {
+    font-size: 1.5rem;
+    border-bottom: 2px solid #FFD400;
+    padding-bottom: 5px;
+    margin-bottom: 15px;
+}
+
+.promo {
+    background: linear-gradient(135deg, #FFD400, #FF0000);
+    color: white;
+    font-size: 1rem;
+    font-weight: bold;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 20px;
+    cursor: pointer;
+    margin-bottom: 20px;
+}
+
+.promocao-item {
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.promocao-item.ativa {
+    border-left: 5px solid #2ecc71; /* Borda verde para itens ativos */
+}
+
+.promocao-info strong .status-ativa {
+    color: #2ecc71;
+    font-size: 0.9rem;
+    margin-left: 8px;
+}
+
+.promocao-info p {
+    margin: 5px 0 0 0;
+    color: #ccc;
+}
+
+.btn-delete {
+    background-color: #c0392b;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.promocao-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.btn-toggle-active {
+    background-color: #27ae60; /* Verde para 'Ativar' */
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.btn-toggle-active.active {
+    background-color: #f39c12; /* Laranja para 'Desativar' */
+}
+
+.sem-promocoes {
+    color: #aaa;
+    font-style: italic;
+}
+
+.promocao-banner {
+    width: 95%;
+    background: linear-gradient(135deg, #FFD400, #FF0000);
+    color: white;
+    padding: 15px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    text-align: center;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+}
+
+.promocao-banner h3 {
+    margin: 0 0 5px 0;
+    font-size: 1.4rem;
+    text-transform: uppercase;
+}
+
+.promocao-banner p {
+    margin: 0;
+    font-size: 1rem;
 }

@@ -94,7 +94,76 @@
 
       // Carregar e exibir promoções
       async function fetchAndDisplayPromotions() {
-        // Implementação para buscar e mostrar promoções
+        try {
+          const response = await fetch(`${API_URL}/promocoes`, { headers });
+          if (!response.ok) throw new Error('Falha ao carregar promoções.');
+          
+          const { promocoes } = await response.json();
+          const listaPromocoesDiv = document.getElementById('lista-promocoes');
+          listaPromocoesDiv.innerHTML = ''; // Limpa a lista antes de preencher
+
+          if (promocoes.length === 0) {
+            listaPromocoesDiv.innerHTML = '<p class="sem-promocoes">Nenhuma promoção cadastrada.</p>';
+            return;
+          }
+
+          promocoes.forEach(promocao => {
+            const itemDiv = document.createElement('div');
+            // Adiciona uma classe se a promoção estiver ativa para estilização
+            itemDiv.className = `promocao-item ${promocao.is_ativa ? 'ativa' : ''}`;
+
+            const isActive = promocao.is_ativa;
+            const toggleButtonText = isActive ? 'Desativar' : 'Ativar';
+            const toggleButtonClass = isActive ? 'btn-toggle-active active' : 'btn-toggle-active';
+
+            itemDiv.innerHTML = `
+              <div class="promocao-info">
+                <strong>${promocao.titulo} ${isActive ? '<span class="status-ativa">(Ativa)</span>' : ''}</strong>
+                <p>${promocao.descricao}</p>
+              </div>
+              <div class="promocao-actions">
+                <button class="${toggleButtonClass}" data-id="${promocao.promocao_id}" data-active="${isActive}">${toggleButtonText}</button>
+                <button class="btn-delete" data-id="${promocao.promocao_id}">Deletar</button>
+              </div>
+            `;
+
+            // Adiciona evento de clique para o botão ATIVAR/DESATIVAR
+            itemDiv.querySelector('.btn-toggle-active').addEventListener('click', async (e) => {
+              const id = e.target.dataset.id;
+              const currentStatus = e.target.dataset.active === 'true';
+              
+              const updateResponse = await fetch(`${API_URL}/promocoes/${id}`, {
+                  method: 'PUT',
+                  headers,
+                  body: JSON.stringify({ is_ativa: !currentStatus })
+              });
+
+              if (updateResponse.ok) {
+                  fetchAndDisplayPromotions(); // Atualiza a lista para refletir a mudança
+              } else {
+                  alert('Falha ao atualizar o status da promoção.');
+              }
+            });
+
+            // Adiciona evento de clique para o botão deletar
+            itemDiv.querySelector('.btn-delete').addEventListener('click', async (e) => {
+              const id = e.target.dataset.id;
+              if (confirm('Tem certeza que deseja deletar esta promoção?')) {
+                const deleteResponse = await fetch(`${API_URL}/promocoes/${id}`, { method: 'DELETE', headers });
+                const result = await deleteResponse.json();
+                alert(result.message);
+                if (deleteResponse.ok) {
+                  fetchAndDisplayPromotions(); // Atualiza a lista
+                }
+              }
+            });
+
+            listaPromocoesDiv.appendChild(itemDiv);
+          });
+        } catch (error) {
+          console.error('Erro ao buscar promoções:', error);
+          document.getElementById('lista-promocoes').innerHTML = '<p class="sem-promocoes">Erro ao carregar promoções.</p>';
+        }
       }
 
       // Criar nova promoção
@@ -125,7 +194,7 @@
       });
 
       fetchDashboardData();
-      // fetchAndDisplayPromotions(); // Chamada inicial para listar as promoções
+      fetchAndDisplayPromotions(); // Chamada inicial para listar as promoções
     });
   </script>
 </body>

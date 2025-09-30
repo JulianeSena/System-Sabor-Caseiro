@@ -27,7 +27,7 @@ def manager_required():
             verify_jwt_in_request()
             claims = get_jwt()
             # Permite acesso se a role for 'gerente' ou 'admin'
-            if claims.get('role') in ['gerente']:
+            if claims.get('role') in ['gerente', 'admin']:
                 return fn(*args, **kwargs)
             return {'message': 'Acesso restrito a gerentes ou administradores.'}, 403
         return decorator
