@@ -2,60 +2,131 @@
 <html lang="pt-br">
 <head>
   <meta charset="UTF-8">
-  <title>Sabor Caseiro</title>
+  <title>Dashboard Gerente - Sabor Caseiro</title>
   <link rel="stylesheet" href="/HTML front/CSS/style2.css">
 </head>
 <body>
 
-  <header>
-    <div class="logo">
-      <img src="/HTML front/Image/chef.png" alt="Logo" class="chef">
-      <h1><span class="sabor">Sabor</span> <span class="caseiro">Caseiro</span></h1>
-    </div>
-    <div class="perfil">
-      <div class="icon"></div>
-      <div class="text">
-        <p><strong><em>Bem-vindo!</em></strong></p>
-        <p>Gerente</p>
+  <div class="blur">
+    <header class="cabecalho">
+      <div class="esquerda">
+        <img src="/HTML front/Image/chef.png" alt="Logo" class="logo">
+        <h2>Sabor<br>Caseiro</h2>
       </div>
-    </div>
-  </header>
+      <div class="direita">
+          <div class="user-info">
+              <h3 id="welcome-message">Bem Vindo!<br>Gerente</h3>
+              <button class="botao-logoff" id="btn-sair">Sair</button>
+          </div>
+          <img src="/HTML front/Image/avatar.png" class="avatar"/>
+      </div>
+    </header>
 
-  <main>
-    <h2>BEM VINDA, ANA JULIA!</h2>
-    <p class="sub">VISÃO GERAL SABOR CASEIRO:</p>
+    <div class="corpo">
+      <h2>Dashboard</h2>
+      <p class="sub">VISÃO GERAL SABOR CASEIRO:</p>
 
-    <div class="cards">
+      <div class="cards">
 
-      <div class="gerent">
-        <div class="div_video">
-          <video class="video" autoplay muted loop playsinline>
-            <source src="/HTML front/video/4k Dynamic Stock Market Interface Video.mp4" type="video/mp4">
-          </video>
+        <div class="gerent">
+          <div class="card-content">
+            <p class="card-title">Receita Total</p>
+            <p class="card-value" id="receita-total">R$ 0,00</p>
+          </div>
         </div>
-        <p>Lucro</p>
+
+        <div class="gerent">
+          <div class="card-content">
+            <p class="card-title">Cupons Emitidos</p>
+            <p class="card-value" id="cupons-emitidos">0</p>
+          </div>
+        </div>
+
+        <div class="gerent">
+          <div class="card-content">
+            <p class="card-title">Total de Clientes</p>
+            <p class="card-value" id="total-clientes">0</p>
+          </div>
+        </div>
       </div>
 
-      <div class="gerent">
-        <div class="div_video">
-          <video class="video" autoplay muted loop playsinline>
-            <source src="/HTML front/video/4k Dynamic Stock Market Interface Video.mp4" type="video/mp4">
-          </video>
+      <div class="promocoes-container">
+        <h3>Gerenciar Promoções</h3>
+        <button class="promo" id="btn-criar-promocao">Criar Nova Promoção</button>
+        <div id="lista-promocoes">
+          <!-- As promoções serão listadas aqui -->
         </div>
-        <p>Cupons descontados</p>
-      </div>
-
-      <div class="gerent">
-        <div class="div_video">
-          <video class="video" autoplay muted loop playsinline>
-            <source src="/HTML front/video/4k Dynamic Stock Market Interface Video.mp4" type="video/mp4">
-          </video>
-        </div>
-        <p>Cupons previstos</p>
       </div>
     </div>
+  </div>
 
-    <button class="promo">Gere uma promoção!</button>
-  </main>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const API_URL = 'http://127.0.0.1:5000';
+      const token = localStorage.getItem('acess_token');
+
+      if (!token) {
+        alert('Acesso não autorizado. Faça o login como gerente.');
+        window.location.href = 'gerente_login.html';
+        return;
+      }
+
+      const headers = {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      };
+
+      // Carregar dados do Dashboard
+      async function fetchDashboardData() {
+        try {
+          const response = await fetch(`${API_URL}/relatorios/dashboard`, { headers });
+          if (!response.ok) throw new Error('Falha ao carregar dados do dashboard.');
+          const data = await response.json();
+          
+          document.getElementById('receita-total').textContent = `R$ ${data.sumario.receita_total.toFixed(2)}`;
+          document.getElementById('cupons-emitidos').textContent = data.sumario.total_cupons_emitidos;
+          document.getElementById('total-clientes').textContent = data.sumario.total_clientes;
+        } catch (error) {
+          console.error('Erro no dashboard:', error);
+          alert(error.message);
+        }
+      }
+
+      // Carregar e exibir promoções
+      async function fetchAndDisplayPromotions() {
+        // Implementação para buscar e mostrar promoções
+      }
+
+      // Criar nova promoção
+      document.getElementById('btn-criar-promocao').addEventListener('click', async () => {
+        const titulo = prompt("Digite o título da nova promoção:");
+        const descricao = prompt("Digite a descrição da promoção:");
+
+        if (titulo && descricao) {
+          try {
+            const response = await fetch(`${API_URL}/promocoes`, {
+              method: 'POST',
+              headers,
+              body: JSON.stringify({ titulo, descricao })
+            });
+            const result = await response.json();
+            alert(response.ok ? 'Promoção criada com sucesso!' : `Erro: ${result.message}`);
+            if (response.ok) fetchAndDisplayPromotions(); // Atualiza a lista
+          } catch (error) {
+            alert('Erro ao criar promoção.');
+          }
+        }
+      });
+
+      // Logout
+      document.getElementById('btn-sair').addEventListener('click', () => {
+        localStorage.removeItem('acess_token');
+        window.location.href = 'gerente_login.html';
+      });
+
+      fetchDashboardData();
+      // fetchAndDisplayPromotions(); // Chamada inicial para listar as promoções
+    });
+  </script>
 </body>
 </html>

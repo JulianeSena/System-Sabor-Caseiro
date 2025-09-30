@@ -9,10 +9,7 @@ from sql_alchemy import banco
 class DashboardReports(Resource):
     @manager_required()
     def get(self):
-        """
-        Endpoint para fornecer dados agregados para o dashboard do gerente.
-        Acessível apenas por administradores.
-        """
+    
         # Consultas para agregar os dados
         total_clientes = UserModel.query.filter_by(role='cliente').count()
         total_cupons = CuponModel.query.count()
@@ -29,7 +26,7 @@ class DashboardReports(Resource):
             .all()
         )
         # Formata para um JSON mais amigável
-        cupons_por_dia = [{'data': r.data.isoformat(), 'quantidade': r.quantidade} for r in cupons_por_dia_query]
+        cupons_por_dia = [{'data': r.data.format(), 'quantidade': r.quantidade} for r in cupons_por_dia_query]
 
         # Consulta para os 5 clientes mais ativos
         top_5_clientes_query = (
