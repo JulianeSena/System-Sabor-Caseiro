@@ -2,7 +2,7 @@
 <html lang="pt-br">
 <head>
   <meta charset="UTF-8">
-  <title>Login ADM - Sabor Caseiro</title>
+  <title>Login Cliente - Sabor Caseiro</title>
   <link rel="stylesheet" href="/HTML front/CSS/caixa_login.css">
 </head>
 <body>
@@ -23,10 +23,10 @@
     <div class="login-box">
       <div class="user-icon"></div>
       <div class="campo">
-        <form id="login-form">
+        <form id="login-form-cliente">
           <div class="cpf">
-            <label for="nome">Nome:</label>
-            <input type="text" id="nome" placeholder="Insira seu nome" required>
+            <label for="documento">CPF:</label>
+            <input type="text" id="documento" placeholder="000.000.000-00" required>
           </div>
 
           <div class="senha">
@@ -40,20 +40,21 @@
     </div>
   </main>
   <script>
-    document.getElementById('login-form').addEventListener('submit', async function(event) {
-      event.preventDefault(); // Impede o recarregamento da página
+    document.getElementById('login-form-cliente').addEventListener('submit', async function(event) {
+      event.preventDefault();
 
-      const nome = document.getElementById('nome').value;
+      const documentoInput = document.getElementById('documento').value;
+      const documento = documentoInput.replace(/\D/g, ''); // Remove caracteres não numéricos
       const senha = document.getElementById('senha').value;
       const API_URL = 'http://127.0.0.1:5000';
 
       try {
-        const response = await fetch(`${API_URL}/admin/login`, {
+        const response = await fetch(`${API_URL}/login/cliente`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ nome, senha }),
+          body: JSON.stringify({ documento, senha }),
         });
 
         const result = await response.json();
@@ -62,10 +63,10 @@
           // Salva o token no localStorage
           localStorage.setItem('acess_token', result.acess_token);
           alert('Login realizado com sucesso!');
-          // Redireciona para a página principal do caixa
-          window.location.href = 'caix-principal.html';
+          // Redireciona para a página principal do cliente
+          window.location.href = 'cli-principal.html';
         } else {
-          alert(result.message || 'Nome ou senha incorretos.');
+          alert(result.message || 'Documento ou senha incorretos.');
         }
       } catch (error) {
         console.error('Erro ao tentar fazer login:', error);

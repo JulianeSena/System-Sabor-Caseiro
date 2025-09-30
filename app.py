@@ -1,15 +1,18 @@
 from flask import Flask, jsonify
 from flask_restful import Api, Resource
 from flask_jwt_extended import JWTManager
-from resources.user import User, UserRegister, UserLogin, AdminLogin, UserLogout
+from resources.user import User, UserRegister, UserLogin, AdminLogin, UserLogout, UserSearch
 from resources.reports import DashboardReports
 from resources.promotion import Promotion, PromotionList, ActivePromotions
 from resources.coupon import Coupon, ClientCoupons
 from blacklist import BLACKLIST
 from sql_alchemy import banco
+from flask_cors import CORS
+
 
 
 app = Flask(__name__)
+CORS(app)
 
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///banco.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
@@ -47,7 +50,7 @@ api.add_resource(DashboardReports, '/relatorios/dashboard') # endpoint para o da
 api.add_resource(PromotionList, '/promocoes') # Gerente/Admin: Criar e listar todas as promoções
 api.add_resource(Promotion, '/promocoes/<int:promocao_id>') # Gerente/Admin: Ver, atualizar (ativar/desativar) e deletar promoção
 api.add_resource(ActivePromotions, '/promocoes/ativas') # Cliente: Ver promoções ativas
-
+api.add_resource(UserSearch, '/cliente/busca')
 
 
 

@@ -33,6 +33,18 @@ def manager_required():
         return decorator
     return wrapper
 
+# Decorador para endpoints que exigem privilégios de caixa, gerente ou administrador
+def cashier_required():
+    def wrapper(fn):
+        @wraps(fn)
+        def decorator(*args, **kwargs):
+            verify_jwt_in_request()
+            claims = get_jwt()
+            if claims.get('role') in [ 'gerente', 'admin']:
+                return fn(*args, **kwargs)
+            return {'message': 'Acesso restrito à equipe autorizada.'}, 403
+        return decorator
+    return wrapper
 
 class User(Resource):
     parser = reqparse.RequestParser()
@@ -41,13 +53,13 @@ class User(Resource):
     parser.add_argument('telefone', type=int, help="O campo 'telefone' não pode ser nulo.")
     parser.add_argument('senha', type=str, help="O campo 'senha' não pode ser nulo.")
 
-    @jwt_required()
+    @cashier_required()
     def get(self, cliente_id): # lista os clientes
         current_user_id = get_jwt_identity()
         claims = get_jwt()
 
-        # Admin pode ver todos, cliente só pode ver a si mesmo. Gerente não acessa este endpoint.
-        if not (claims.get('role') == 'admin' or str(cliente_id) == str(current_user_id)):
+        # Admin, Gerente podem ver qualquer cliente. 
+        if claims.get('role') == 'cliente' and str(cliente_id) != str(current_user_id):
             return {'message': 'Acesso não autorizado.'}, 403
 
         cliente = UserModel.find_cli_by_id(cliente_id)
@@ -55,13 +67,13 @@ class User(Resource):
             return cliente.json()
         return {'message': 'Cliente não foi encontrado'}, 404
 
-    @jwt_required()
+    @cashier_required()
     def put(self, cliente_id): # atualizar os dados dos clientes
         current_user_id = get_jwt_identity()
         claims = get_jwt()
-
-        # Um administrador pode editar qualquer usuário, um cliente só pode editar a si mesmo.
-        if not (claims.get('role') == 'admin' or str(cliente_id) == str(current_user_id)):
+        
+        # Admin, Gerente podem editar qualquer cliente. Cliente só pode editar a si mesmo.
+        if claims.get('role') == 'cliente' and str(cliente_id) != str(current_user_id):
             return {'message': 'Acesso não autorizado para editar este usuário.'}, 403
 
         cliente = UserModel.find_cli_by_id(cliente_id)
@@ -106,9 +118,12 @@ class UserRegister(Resource):
     atribuicao.add_argument('senha', type=str, required=True, help="O campo 'senha' não pode ser deixado em branco" )
     atribuicao.add_argument('role', type=str, default='cliente', help="Define a função do usuário (cliente, gerente, admin).")
     
-    @admin_required()
+    @cashier_required()
     def post(self):
         dados = self.atribuicao.parse_args()
+        claims = get_jwt()
+
+        # Admins/Gerentes podem definir outras roles.
 
         if dados['role'] not in ['cliente', 'gerente', 'admin']:
             return {'message': "A função '{}' é inválida.".format(dados['role'])}, 400
@@ -153,7 +168,7 @@ class AdminLogin(Resource):
 
         admin = UserModel.find_cli_by_name(dados['nome'])
 
-        # Este endpoint é para administradores e gerentes
+        # Este endpoint é para admin e gerentes
         if admin and admin.role in ['admin', 'gerente'] and compare_digest(admin.senha, dados['senha']):
             token_de_acesso = create_access_token(
                 identity=str(admin.cliente_id),
@@ -168,3 +183,18 @@ class UserLogout(Resource):
         jwt_id = get_jwt()['jti'] # token identifier 
         BLACKLIST.add(jwt_id)
         return {'message': "Cliente deslogado com sucesso!"}, 200
+
+class UserSearch(Resource):
+    parser = reqparse.RequestParser()
+    parser.add_argument('documento', type=str, required=True, help="O campo 'documento' não pode ser nulo.")
+
+    @cashier_required()
+    def post(self):
+        dados = self.parser.parse_args()
+        
+        cliente = UserModel.find_cli_by_doc(dados['documento'])
+
+        if cliente:
+            return cliente.json()
+        
+        return {'message': 'Cliente não encontrado com o documento fornecido.'}, 404

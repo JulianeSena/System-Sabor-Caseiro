@@ -16,8 +16,8 @@
 
             <div class="direita">
                 <div class="user-info">
-                    <h3>Bem Vindo!<br>Vera Maria Azambuja</h3>
-                    <button class="botao-logoff">Sair</button>
+                    <h3 id="welcome-message">Bem Vindo!</h3>
+                    <button class="botao-logoff" id="btn-sair">Sair</button>
                 </div>
                 <img src="/HTML front/Image/avatar.png" class="avatar"/>
             </div>
@@ -26,24 +26,12 @@
         <div class="corpo">
             <h2>Confira seu cartão fidelidade!</h2>
             
-            <table>
-                <tr>
-                    <td>R$ 45,00</td>
-                    <td>R$ 45,00</td>
-                    <td>R$ 45,00</td>
-                    <td>R$ 45,00</td>
-                </tr>
-                <tr>
-                    <td>R$ 45,00</td>
-                    <td>R$ 45,00</td>
-                    <td>R$ 45,00</td>
-                    <td>R$ 45,00</td>
-                </tr>
+            <table id="tabela-cupons">
+                <!-- As linhas e células dos cupons serão inseridas aqui via JS -->
             </table>
 
             <div class="result">
-                <h2 class="texto">Desconto de: </h2>
-                <table class="tabela"><td>R$ 45,00</td></table>
+                <h2 class="texto" id="texto-desconto">Carregando...</h2>
             </div>
 
             <div class="canais">
@@ -60,5 +48,105 @@
             </div>
         </div>
     </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            const API_URL = 'http://127.0.0.1:5000';
+            const token = localStorage.getItem('acess_token');
+
+            // 1. Validação de Autenticação
+            if (!token) {
+                alert('Sessão não iniciada. Por favor, faça o login.');
+                window.location.href = 'cliente_login.html';
+                return;
+            }
+
+            // Função para decodificar o token e pegar o ID do cliente
+            function getClientIdFromToken(token) {
+                try {
+                    const payload = JSON.parse(atob(token.split('.')[1]));
+                    return payload.sub; // 'sub' é o campo de identidade (cliente_id)
+                } catch (e) {
+                    console.error('Erro ao decodificar token:', e);
+                    return null;
+                }
+            }
+
+            const clienteId = getClientIdFromToken(token);
+
+            if (!clienteId) {
+                alert('Token inválido. Faça o login novamente.');
+                localStorage.removeItem('acess_token');
+                window.location.href = 'cliente_login.html';
+                return;
+            }
+
+            // 2. Buscar e Preencher Dados
+            try {
+                // Buscar dados do cliente (nome)
+                const resCliente = await fetch(`${API_URL}/cliente/${clienteId}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (!resCliente.ok) throw new Error('Falha ao buscar dados do cliente.');
+                const cliente = await resCliente.json();
+                document.getElementById('welcome-message').innerHTML = `Bem Vindo!<br>${cliente.nome}`;
+
+                // Buscar cupons (compras)
+                const resCupons = await fetch(`${API_URL}/cliente/${clienteId}/cupons`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (!resCupons.ok) throw new Error('Falha ao buscar cupons.');
+                const { cupons } = await resCupons.json();
+
+                // Preencher tabela de cupons
+                const tabelaCupons = document.getElementById('tabela-cupons');
+                tabelaCupons.innerHTML = ''; // Limpa a tabela
+                let linha;
+                cupons.forEach((cupom, index) => {
+                    if (index % 4 === 0) { // Cria uma nova linha a cada 4 cupons
+                        linha = tabelaCupons.insertRow();
+                    }
+                    const celula = linha.insertCell();
+                    celula.textContent = `R$ ${parseFloat(cupom.preco_cupom).toFixed(2)}`;
+                });
+
+                // Calcular e exibir desconto
+                const textoDesconto = document.getElementById('texto-desconto');
+                const numCiclosCompletos = Math.floor(cupons.length / 10);
+                const cuponsNoCicloAtual = cupons.length % 10;
+
+                if (cuponsNoCicloAtual === 0 && cupons.length > 0) {
+                    // Pega os últimos 10 cupons para calcular a média
+                    const ultimos10cupons = cupons.slice(-10);
+                    const soma = ultimos10cupons.reduce((acc, cupom) => acc + cupom.preco_cupom, 0);
+                    const media = soma / 10;
+                    textoDesconto.innerHTML = `Cupom de Desconto Disponível: <table class="tabela"><td>R$ ${media.toFixed(2)}</td></table>`;
+                } else {
+                    textoDesconto.textContent = `Faltam ${10 - cuponsNoCicloAtual} refeições para seu próximo cupom!`;
+                }
+
+            } catch (error) {
+                console.error('Erro ao carregar dados:', error);
+                alert('Ocorreu um erro ao carregar seus dados. Tente novamente.');
+                localStorage.removeItem('acess_token');
+                window.location.href = 'cliente_login.html';
+            }
+
+            // 3. Funcionalidade do Botão Sair (Logout)
+            document.getElementById('btn-sair').addEventListener('click', async () => {
+                try {
+                    await fetch(`${API_URL}/logout`, {
+                        method: 'POST',
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                } catch (e) {
+                    console.error("Erro no logout, mas desconectando localmente:", e);
+                } finally {
+                    localStorage.removeItem('acess_token');
+                    alert('Você foi desconectado.');
+                    window.location.href = 'cliente_login.html';
+                }
+            });
+        });
+    </script>
 </body>
 </html>

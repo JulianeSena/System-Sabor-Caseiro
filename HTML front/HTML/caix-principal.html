@@ -17,7 +17,7 @@
             <div class="direita">
                 <div class="user-info">
                     <h3>Bem Vindo!<br>Caixa</h3>
-                    <button class="botao-logoff">Sair</button>
+                    <button class="botao-logoff" id="btn-sair">Sair</button>
                 </div>
                 <img src="/HTML front/Image/avatar.png" class="avatar"/>
             </div>
@@ -29,19 +29,75 @@
             <div class="pesquisa">
                 <div class="campo-horizontal">
                     <label for="cpf">CPF:</label>
-                    <input type="text" id="cpf" value="000.000.000-00" class="input-pesquisa"/>
-                </div>
-                <div class="campo-horizontal">
-                    <label for="nome">Nome:</label>
-                    <input type="text" id="nome" value="Vera Maria Azambuja" class="input-pesquisa"/>
+                    <input type="text" id="cpf" placeholder="Digite o CPF do cliente" class="input-pesquisa"/>
                 </div>
             </div>
 
             <div class="botoes">
-                <button class="botao-cinza">Pesquisar</button>
-                <button class="botao-cinza">Cadastrar</button>
+                <button class="botao-cinza" id="btn-pesquisar">Pesquisar</button>
+                <button class="botao-cinza" id="btn-cadastrar">Cadastrar</button>
             </div>
         </div>
     </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const API_URL = 'http://127.0.0.1:5000';
+            const token = localStorage.getItem('acess_token');
+
+            // Verifica se o usuário está logado (possui token)
+            if (!token) {
+                alert('Sessão expirada. Por favor, faça o login novamente.');
+                window.location.href = 'caixa_login.html'; // Ou a página de login correta
+            }
+
+            // Botão Sair (Logout)
+            document.getElementById('btn-sair').addEventListener('click', () => {
+                localStorage.removeItem('acess_token');
+                alert('Você foi desconectado.');
+                window.location.href = 'caixa_login.html'; // Redireciona para o login
+            });
+
+            // Botão Cadastrar
+            document.getElementById('btn-cadastrar').addEventListener('click', () => {
+                window.location.href = 'caix-cadastro.html';
+            });
+
+            // Botão Pesquisar
+            document.getElementById('btn-pesquisar').addEventListener('click', async () => {
+                const cpfInput = document.getElementById('cpf').value;
+                const documento = cpfInput.replace(/\D/g, ''); // Remove caracteres não numéricos
+
+                if (!documento) {
+                    alert('Por favor, digite um CPF para pesquisar.');
+                    return;
+                }
+
+                try {
+                    // A API espera um POST para o login, que retorna os dados do usuário se o documento existir.
+                    // Usaremos este endpoint para "buscar" o cliente pelo documento.
+                    const response = await fetch(`${API_URL}/cliente/busca`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        },
+                        body: JSON.stringify({ documento: documento })
+                    });
+
+                    const result = await response.json();
+
+                    if (response.ok) {
+                        // Se encontrou, redireciona para a página de detalhes do cliente
+                        window.location.href = `caix-pesquisa.html?id=${result.cliente_id}`;
+                    } else {
+                        alert(result.message || 'Cliente não encontrado.');
+                    }
+                } catch (error) {
+                    console.error('Erro ao pesquisar cliente:', error);
+                    alert('Ocorreu um erro de comunicação com o servidor.');
+                }
+            });
+        });
+    </script>
 </body>
 </html>
