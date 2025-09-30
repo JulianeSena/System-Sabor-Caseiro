@@ -1,0 +1,144 @@
+/* Reset */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+body {
+  background-color: #f5f5f5;
+  min-height: 100vh;
+}
+
+/* Header */
+header {
+  background-color: #8b5a2b;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 30px;
+  color: white;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.chef {
+  width: 60px;
+  height: 60px;
+}
+
+.logo h1 {
+  font-size: 24px;
+}
+
+.sabor {
+  color: orange;
+}
+
+.caseiro {
+  color: red;
+}
+
+.perfil {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.perfil .icon {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: #ccc;
+}
+
+.login-btn {
+  background: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 15px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.login-btn:hover {
+  background: #eee;
+}
+
+/* Main content */
+main {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 40px 20px;
+}
+
+/* Caixa de login */
+.login-box {
+  background: rgba(30, 20, 10, 0.95);
+  border-radius: 15px;
+  width: 400px;
+  padding: 40px 30px;
+  text-align: center;
+  color: white;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+}
+
+.user-icon {
+  width: 100px;
+  height: 100px;
+  margin: 0 auto 30px auto;
+  border-radius: 50%;
+  background: #ccc;
+}
+
+/* Campos do formulário */
+.campo {
+  margin-bottom: 25px;
+}
+
+.cpf, .senha {
+  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.campo label {
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+.campo input {
+  width: 100%;
+  padding: 12px 15px;
+  border-radius: 20px;
+  border: none;
+  font-weight: bold;
+  text-align: center;
+  background: white;
+}
+
+/* Botão entrar */
+.entrar {
+  background: white;
+  border: none;
+  padding: 12px 30px;
+  border-radius: 15px;
+  font-weight: bold;
+  cursor: pointer;
+  margin-top: 10px;
+  width: 100%;
+  font-size: 16px;
+}
+
+.entrar:hover {
+  background: #ddd;
+}
