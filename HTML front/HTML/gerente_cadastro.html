@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="/HTML front/CSS/gerente_cadastro.css" />
+    <title>Cadastro funcionario</title>
+</head>
+<body>
+    <div class="blur">
+
+        <div class="cabecalho">
+            <div class="esquerda">
+                <img src="/HTML front/Image/chef.png" class="logo"/>
+                <h2>Sabor<br>Caseiro</h2>
+            </div>
+
+            <div class="direita">
+                <div class="user-info">
+                    <h3>Bem Vindo!<br>Gerente</h3>
+                    <button class="botao-logoff" id="btn-sair">Sair</button>
+                </div>
+                <img src="/HTML front/Image/avatar.png" class="avatar"/>
+            </div>
+        </div>
+
+        <div class="corpo">
+            <form id="cadastro-form">   
+                <div class="pesquisa">
+                    <div class="campo-horizontal">
+                        <label for="documento">CPF:</label>
+                        <input type="text" id="cpf" placeholder="000.000.000-00" class="input-pesquisa"/>
+                    </div>
+                    <div class="campo-horizontal">
+                        <label for="nome">Nome:</label>
+                        <input type="text" id="nome" placeholder="Nome Completo do Cliente" class="input-pesquisa"/>
+                    </div>
+                    <div class="campo-horizontal">
+                        <label for="email">Email:</label>
+                        <input type="text" id="email"  placeholder="cliente@email.com" class="input-pesquisa"/>
+                    </div>
+                    <div class="campo-horizontal">
+                        <label for="telefone">Telefone:</label>
+                        <input type="text" id="telefone" placeholder="(53) 99999-0000" class="input-pesquisa"/>
+                    </div>
+                    <div class="campo-horizontal">
+                        <label for="senha">Senha:</label>
+                        <input type="password" id="senha" placeholder="Crie uma senha para o cliente" class="input-pesquisa" required/>
+                    </div>
+                </div>
+
+                <div class="botoes">
+                    <button type="button" id="btn-voltar" class="botao-cinza">Voltar</button>
+                    <button type="submit" class="botao-cinza" id="btn-cadastrar">Cadastrar</button>
+                </div>
+            </form>     
+        </div>
+    </div>
