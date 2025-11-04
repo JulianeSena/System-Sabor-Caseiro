@@ -26,17 +26,18 @@
         <div class="corpo">
             <form id="cadastro-form">   
                 <div class="pesquisa">
+
+                    <div class="campo-horizontal">
+                        <label for="nome">Nome:</label>
+                        <input type="text" id="nome" placeholder="Nome Completo" class="input-pesquisa"/>
+                    </div>
                     <div class="campo-horizontal">
                         <label for="documento">CPF:</label>
                         <input type="text" id="cpf" placeholder="000.000.000-00" class="input-pesquisa"/>
                     </div>
                     <div class="campo-horizontal">
-                        <label for="nome">Nome:</label>
-                        <input type="text" id="nome" placeholder="Nome Completo do Cliente" class="input-pesquisa"/>
-                    </div>
-                    <div class="campo-horizontal">
                         <label for="email">Email:</label>
-                        <input type="text" id="email"  placeholder="cliente@email.com" class="input-pesquisa"/>
+                        <input type="text" id="email"  placeholder="email@funcionario" class="input-pesquisa"/>
                     </div>
                     <div class="campo-horizontal">
                         <label for="telefone">Telefone:</label>
@@ -44,7 +45,11 @@
                     </div>
                     <div class="campo-horizontal">
                         <label for="senha">Senha:</label>
-                        <input type="password" id="senha" placeholder="Crie uma senha para o cliente" class="input-pesquisa" required/>
+                        <input type="password" id="senha" placeholder="Senha de Acesso" class="input-pesquisa" required/>
+                    </div>
+                    <div class="campo-horizontal">
+                        <label for="cargo">Cargo:</label>
+                        <input type="text" id="cargo" placeholder="Cargo do Funcionario" class="input-pesquisa" required/>
                     </div>
                 </div>
 
@@ -55,3 +60,28 @@
             </form>     
         </div>
     </div>
+</body>
+
+<script>
+      document.getElementById('cadastro-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const nome = document.getElementById('nome').value;
+        const documento = document.getElementById('cpf').value.replace(/\D/g, '');
+        const email = document.getElementById('email').value;
+        const telefone = document.getElementById('telefone').value;
+        const senha = document.getElementById('senha').value;
+        const cargo = document.getElementById('cargo').value;
+
+      });
+      
+    document.getElementById('btn-voltar').addEventListener('click', () => {
+        window.location.href = 'gerente_inicio.html';
+      });
+
+    // Logout
+      document.getElementById('btn-sair').addEventListener('click', () => {
+        localStorage.removeItem('acess_token');
+        window.location.href = 'gerente_login.html';
+      });
+</script>
+</html>    
