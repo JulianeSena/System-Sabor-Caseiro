@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <title>Dashboard Gerente - Sabor Caseiro</title>
   <link rel="stylesheet" href="/HTML front/CSS/style2.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
 
@@ -53,13 +54,18 @@
       <div class="promocoes-container">
         <h3>Gerenciar Promoções</h3>
         <button class="promo" id="btn-criar-promocao">Criar Nova Promoção</button>
-        <div id="lista-promocoes">
-
-        </div>
+        <div id="lista-promocoes"></div>
       </div>
+
+      <div class="grafico-container">
+        <h3>Promoções do Mês</h3>
+        <canvas id="graficoPromocoes"></canvas>
+      </div>
+
     </div>
   </div>
 
+  
   <script>
     document.addEventListener('DOMContentLoaded', () => {
       const API_URL = 'http://127.0.0.1:5000';
