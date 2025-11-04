@@ -12,10 +12,6 @@ coupon_parser.add_argument('preco_cupom', type=float, required=True, help="O cam
 class Coupon(Resource):
     @admin_required()
     def post(self, cliente_id):
-        """
-        Adiciona um novo cupom para um cliente.
-        Apenas administradores podem realizar esta ação.
-        """
         cliente = UserModel.find_cli_by_id(cliente_id)
         if not cliente:
             return {'message': 'Cliente não encontrado.'}, 404
@@ -35,10 +31,7 @@ class Coupon(Resource):
 class ClientCoupons(Resource):
     @jwt_required()
     def get(self, cliente_id):
-        """
-        - Administradores podem ver os cupons de qualquer cliente.
-        - Clientes podem ver apenas os seus próprios cupons.
-        """
+
         current_user_id = get_jwt_identity()
         claims = get_jwt()
 

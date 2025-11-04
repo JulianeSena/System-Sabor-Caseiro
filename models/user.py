@@ -11,7 +11,7 @@ class UserModel(banco.Model):
     senha = banco.Column(banco.String(120), nullable=False)
     role = banco.Column(banco.String(20), default='cliente', nullable=False) # 'cliente', 'gerente', 'admin'
 
-    # cascade="all, delete-orphan": Se um cliente for deletado, todos os seus cupons também serão.
+    # cascade="all, delete-orphan": se um cliente for deletado, todos os seus cupons também serão.
     cupons = banco.relationship('CuponModel', backref='cliente', lazy=True, cascade='all, delete-orphan')
 
     def __init__(self, nome, email, telefone, documento, senha, role='cliente'):
@@ -27,7 +27,7 @@ class UserModel(banco.Model):
         cupons_no_cartao_atual = total_de_cupons % 10
         cupons_para_proximo_desconto = 10 - cupons_no_cartao_atual
         if cupons_para_proximo_desconto == 10:
-            cupons_para_proximo_desconto = 0 # Se acabou de completar, não falta nenhum para o desconto atual
+            cupons_para_proximo_desconto = 0 # se completoul, n falta p desconto total
 
         return {
             'cliente_id': self.cliente_id,

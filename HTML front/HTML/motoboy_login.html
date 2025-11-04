@@ -2,8 +2,8 @@
 <html lang="pt-br">
 <head>
   <meta charset="UTF-8">
-  <title>Login Gerente - Sabor Caseiro</title>
-  <link rel="stylesheet" href="../CSS/geren_login.css">
+  <title>Login Motoboy - Sabor Caseiro</title>
+  <link rel="stylesheet" href="/HTML front/CSS/caixa_login.css">
 </head>
 <body>
   
@@ -22,7 +22,7 @@
         <form id="login-form">
           <div class="cpf">
             <label for="nome">Nome:</label>
-            <input type="text" id="nome" placeholder="Gerente" required>
+            <input type="text" id="nome" placeholder="Insira seu nome" required>
           </div>
 
           <div class="senha">
@@ -35,7 +35,7 @@
       </div>
     </div>
   </main>
-    <script>
+  <script>
     document.getElementById('login-form').addEventListener('submit', async function(event) {
       event.preventDefault(); // Impede o recarregamento da página
 
@@ -55,11 +55,9 @@
         const result = await response.json();
 
         if (response.ok) {
-          // Salva o token no localStorage
           localStorage.setItem('acess_token', result.acess_token);
           alert('Login realizado com sucesso!');
-          // Redireciona para a página principal do caixa
-          window.location.href = 'gerente_inicio.html';
+          window.location.href = 'motoboy_pesquisar.html';
         } else {
           alert(result.message || 'Nome ou senha incorretos.');
         }
@@ -69,7 +67,6 @@
       }
     });
   </script>
-
    <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
 </body>
 </html>

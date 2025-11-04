@@ -3,12 +3,12 @@ from models.promotion import PromotionModel
 from resources.user import manager_required
 from flask_jwt_extended import jwt_required
 
-# Parser para criar uma promoção
+# criar uma promoção
 parser = reqparse.RequestParser()
 parser.add_argument('titulo', type=str, required=True, help="O campo 'titulo' é obrigatório.")
 parser.add_argument('descricao', type=str, required=False, help="Descrição da promoção.")
 
-# Parser para atualizar uma promoção (incluindo ativação)
+#atualizar uma promoção (incluindo ativação)
 update_parser = reqparse.RequestParser()
 update_parser.add_argument('titulo', type=str)
 update_parser.add_argument('descricao', type=str)
@@ -30,7 +30,7 @@ class Promotion(Resource):
 
         dados = update_parser.parse_args()
         
-        # Atualiza os campos apenas se eles foram fornecidos no request
+        # att  campos apenas se eles foram fornecidos no request
         if dados.get('titulo') is not None:
             promocao.titulo = dados['titulo']
         if dados.get('descricao') is not None:

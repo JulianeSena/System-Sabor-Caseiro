@@ -6,7 +6,7 @@ from blacklist import BLACKLIST
 from functools import wraps
 
 
-# Decorador para endpoints que exigem privilégios de administrador
+# decorator com privilegios para admin
 def admin_required():
     def wrapper(fn):
         @wraps(fn)
@@ -19,14 +19,14 @@ def admin_required():
         return decorator
     return wrapper
 
-# Decorador para endpoints que exigem privilégios de gerente ou administrador
+# decorator para privilegios de admin e gerent
 def manager_required():
     def wrapper(fn):
         @wraps(fn)
         def decorator(*args, **kwargs):
             verify_jwt_in_request()
             claims = get_jwt()
-            # Permite acesso se a role for 'gerente' ou 'admin'
+            # acesso permitido se a role for 'gerente' ou 'admin'
             if claims.get('role') in ['gerente', 'admin']:
                 return fn(*args, **kwargs)
             return {'message': 'Acesso restrito a gerentes ou administradores.'}, 403
@@ -46,7 +46,7 @@ class User(Resource):
         current_user_id = get_jwt_identity()
         claims = get_jwt()
         
-        # Permite que admin/gerente vejam qualquer cliente, e que um cliente veja a si mesmo.
+        # admin/gerente pode ver qualquer cliente
         if claims.get('role') not in ['admin', 'gerente'] and str(cliente_id) != str(current_user_id):
             return {'message': 'Acesso não autorizado.'}, 403
         
@@ -60,7 +60,7 @@ class User(Resource):
         current_user_id = get_jwt_identity()
         claims = get_jwt()
         
-        # Admin e Gerente podem editar qualquer cliente. Cliente só pode editar a si mesmo.
+        # admin/gerent podem editar qualquer cliente, cliente só pode editar a si mesmo.
         allowed_roles = ['admin', 'gerente'] 
         if claims.get('role') not in allowed_roles and str(cliente_id) != str(current_user_id):
             return {'message': 'Acesso não autorizado.'}, 403
@@ -69,7 +69,7 @@ class User(Resource):
         if not cliente:
             return {'message': 'Cliente não encontrado.'}, 404
 
-        # Cria um parser específico para o PUT, que não exige todos os campos
+        # parser específico para o PUT, que não exige todos os campos
         put_parser = reqparse.RequestParser()
         put_parser.add_argument('nome', type=str)
         put_parser.add_argument('email', type=str)
@@ -119,7 +119,6 @@ class UserRegister(Resource):
     def post(self):
         dados = self.atribuicao.parse_args()
 
-        # Apenas Admins/Gerentes podem definir outras roles.
         # O cadastro via este endpoint, por um admin, é para clientes.
         if dados['role'] not in ['cliente', 'gerente', 'admin']:
             return {'message': "A função '{}' é inválida.".format(dados['role'])}, 400
@@ -143,7 +142,7 @@ class UserLogin(Resource):
 
         cliente = UserModel.find_cli_by_doc(dados['documento'])
 
-        # Este endpoint é para clientes (não administradores)
+        # login de clientes aqui
         if cliente and cliente.role == 'cliente' and compare_digest(cliente.senha, dados['senha']):
             token_de_acesso = create_access_token(
                 identity=str(cliente.cliente_id),
@@ -164,7 +163,7 @@ class AdminLogin(Resource):
 
         admin = UserModel.find_cli_by_name(dados['nome'])
 
-        # Este endpoint é para admin e gerentes.
+        # login de admin/gerente aqui
         if admin and admin.role in ['admin', 'gerente'] and compare_digest(admin.senha, dados['senha']):
             token_de_acesso = create_access_token(
                 identity=str(admin.cliente_id),
@@ -180,6 +179,7 @@ class UserLogout(Resource):
         BLACKLIST.add(jwt_id)
         return {'message': "Cliente deslogado com sucesso!"}, 200
 
+# achar cliente pelo documento
 class UserSearch(Resource):
     parser = reqparse.RequestParser()
     parser.add_argument('documento', type=str, required=True, help="O campo 'documento' não pode ser nulo.")

@@ -51,6 +51,11 @@
         </div>
       </div>
 
+      <div class="funcionarios-container">
+        <h3>Gerenciar Funcionários</h3>
+        <button class="promo" id="btn-cadastrar-funcionario">Cadastrar Novo Funcionário</button>
+      </div>
+
       <div class="promocoes-container">
         <h3>Gerenciar Promoções</h3>
         <button class="promo" id="btn-criar-promocao">Criar Nova Promoção</button>
@@ -58,8 +63,18 @@
       </div>
 
       <div class="grafico-container">
-        <h3>Promoções do Mês</h3>
+        <h3>Cupons Emitidos Por Dia</h3>
         <canvas id="graficoPromocoes"></canvas>
+      </div>
+
+      <div class="grafico-container">
+        <h3>Top 5 Clientes Mais Ativos</h3>
+        <canvas id="graficoClientes"></canvas>
+      </div>
+
+      <div class="grafico-container">
+        <h3>Receita Total</h3>
+        <canvas id="graficoReceita"></canvas>
       </div>
 
     </div>
@@ -80,6 +95,16 @@
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${token}`
       };
+
+      function handleAuthError(error, response) {
+        if (response && response.status === 401) {
+          alert('Sessão expirada. Faça o login novamente.');
+          localStorage.removeItem('acess_token');
+          window.location.href = 'gerente_login.html';
+          return true;
+        }
+        return false;
+      }
 
       // Carregar dados do Dashboard
       async function fetchDashboardData() {
@@ -143,7 +168,6 @@
 
               if (updateResponse.ok) {
                   fetchAndDisplayPromotions();
-                  gerarGraficoPromocoes();
               } else {
                   alert('Falha ao atualizar o status da promoção.');
               }
@@ -157,7 +181,6 @@
                 alert(result.message);
                 if (deleteResponse.ok) {
                   fetchAndDisplayPromotions();
-                  gerarGraficoPromocoes();
                 }
               }
             });
@@ -186,7 +209,6 @@
             alert(response.ok ? 'Promoção criada com sucesso!' : `Erro: ${result.message}`);
             if (response.ok) {
               fetchAndDisplayPromotions();
-              gerarGraficoPromocoes();
             }
           } catch (error) {
             alert('Erro ao criar promoção.');
@@ -194,35 +216,48 @@
         }
       });
 
-      // Geração do gráfico de promoções
-      async function gerarGraficoPromocoes() {
+      // cadastro funcionario
+      document.getElementById('btn-cadastrar-funcionario').addEventListener('click', () => {
+        window.location.href = 'gerente_cadastro.html';
+      });
+
+           async function gerarGraficoPromocoes() {
         try {
-          const response = await fetch(`${API_URL}/promocoes`, { headers });
-          if (!response.ok) throw new Error('Falha ao carregar promoções.');
+          const response = await fetch(`${API_URL}/relatorios/dashboard`, { headers });
+          if (!response.ok) throw new Error('Falha ao carregar dados do dashboard.');
           
-          const { promocoes } = await response.json();
+          const data = await response.json();
           const ctx = document.getElementById('graficoPromocoes').getContext('2d');
 
           if (window.promocoesChart) {
             window.promocoesChart.destroy();
           }
 
-          if (promocoes.length === 0) {
+          // Verifica se há dados de cupons por dia
+          const cupons_por_dia = data.cupons_por_dia || [];
+          
+          if (cupons_por_dia.length === 0) {
             ctx.font = "16px Arial";
-            ctx.fillText("Nenhuma promoção registrada neste mês.", 20, 50);
+            ctx.fillText("Nenhum cupom registrado neste mês.", 20, 50);
             return;
           }
 
-          const labels = promocoes.map(p => p.titulo);
-          const cupons = promocoes.map(p => p.cupons_emitidos || 0);
-          const cores = promocoes.map(p => p.is_ativa ? 'rgba(75, 192, 192, 0.6)' : 'rgba(255, 99, 132, 0.6)');
+          const labels = cupons_por_dia.map(item => {
+            const date = new Date(item.data);
+            return date.toLocaleDateString('pt-BR', { 
+              day: '2-digit', 
+              month: '2-digit' 
+            });
+          });
+          const cupons = cupons_por_dia.map(item => item.quantidade);
+          const cores = cupons.map(() => 'rgba(75, 192, 192, 0.6)');
 
           window.promocoesChart = new Chart(ctx, {
             type: 'bar',
             data: {
               labels,
               datasets: [{
-                label: 'Cupons emitidos por promoção',
+                label: 'Cupons emitidos por dia',
                 data: cupons,
                 backgroundColor: cores,
                 borderColor: 'rgba(0,0,0,0.2)',
@@ -235,7 +270,7 @@
                 legend: { position: 'top' },
                 title: {
                   display: true,
-                  text: 'Desempenho das Promoções'
+                  text: 'Desempenho dos Cupons por Dia'
                 }
               },
               scales: {
@@ -248,6 +283,141 @@
         }
       }
 
+      async function gerarGraficoClientes() {
+        try {
+          const response = await fetch(`${API_URL}/relatorios/dashboard`, { headers });
+          if (!response.ok) throw new Error('Falha ao carregar dados do dashboard.');
+          
+          const data = await response.json();
+          const ctx = document.getElementById('graficoClientes').getContext('2d');
+
+          if (window.clientesChart) {
+            window.clientesChart.destroy();
+          }
+
+          // Verifica se há dados de clientes
+          const top_5_clientes = data.top_5_clientes || [];
+          
+          if (top_5_clientes.length === 0) {
+            ctx.font = "16px Arial";
+            ctx.fillText("Nenhum cliente ativo registrado.", 20, 50);
+            return;
+          }
+
+          const labels = top_5_clientes.map(cliente => cliente.nome);
+          const cupons = top_5_clientes.map(cliente => cliente.total_cupons);
+
+          window.clientesChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+              labels,
+              datasets: [{
+                label: 'Total de cupons por cliente',
+                data: cupons,
+                backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                borderColor: 'rgba(54, 162, 235, 1)',
+                borderWidth: 3,
+                fill: true,
+                tension: 0.4,
+                pointBackgroundColor: 'rgba(54, 162, 235, 1)',
+                pointBorderColor: '#fff',
+                pointBorderWidth: 2,
+                pointRadius: 6
+              }]
+            },
+            options: {
+              responsive: true,
+              plugins: {
+                legend: { position: 'top' },
+                title: {
+                  display: true,
+                  text: 'Ranking dos Clientes Mais Ativos'
+                }
+              },
+              scales: {
+                y: { beginAtZero: true }
+              }
+            }
+          });
+        } catch (error) {
+          console.error('Erro ao gerar gráfico de clientes:', error);
+        }
+      }
+
+     /* async function gerarGraficoReceita() {
+        try {
+          const response = await fetch(`${API_URL}/relatorios/dashboard`, { headers });
+          if (!response.ok) throw new Error('Falha ao carregar dados do dashboard.');
+          
+          const data = await response.json();
+          const ctx = document.getElementById('graficoReceita').getContext('2d');
+
+          if (window.receitaChart) {
+            window.receitaChart.destroy();
+          }
+
+          const receita_total = data.sumario.receita_total || 0;
+          const total_cupons = data.sumario.total_cupons_emitidos || 0;
+          
+          if (receita_total === 0) {
+            ctx.font = "16px Arial";
+            ctx.fillText("Nenhuma receita registrada.", 20, 50);
+            return;
+          }
+
+          // Cálculo simples de receita média por cupom
+          const receita_media_cupom = total_cupons > 0 ? receita_total / total_cupons : 0;
+          const outras_receitas = receita_total * 0.2; // 20% outras receitas (exemplo)
+          const receita_cupons = receita_total - outras_receitas;
+
+          window.receitaChart = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+              labels: ['Receita de Cupons', 'Outras Receitas'],
+              datasets: [{
+                data: [receita_cupons, outras_receitas],
+                backgroundColor: [
+                  'rgba(75, 192, 192, 0.8)',
+                  'rgba(255, 206, 86, 0.8)'
+                ],
+                borderColor: [
+                  'rgba(75, 192, 192, 1)',
+                  'rgba(255, 206, 86, 1)'
+                ],
+                borderWidth: 2
+              }]
+            },
+            options: {
+              responsive: true,
+              plugins: {
+                legend: { 
+                  position: 'bottom',
+                  labels: {
+                    padding: 20
+                  }
+                },
+                title: {
+                  display: true,
+                  text: `Total: R$ ${receita_total.toFixed(2)}`
+                },
+                tooltip: {
+                  callbacks: {
+                    label: function(context) {
+                      const value = context.parsed;
+                      const percentage = ((value / receita_total) * 100).toFixed(1);
+                      return `${context.label}: R$ ${value.toFixed(2)} (${percentage}%)`;
+                    }
+                  }
+                }
+              }
+            }
+          });
+        } catch (error) {
+          console.error('Erro ao gerar gráfico de receita:', error);
+        }
+      } */
+
+
       // Logout
       document.getElementById('btn-sair').addEventListener('click', () => {
         localStorage.removeItem('acess_token');
@@ -258,9 +428,11 @@
       fetchDashboardData();
       fetchAndDisplayPromotions();
       gerarGraficoPromocoes();
+      gerarGraficoClientes();
     });
   </script>
 
+  
   <style>
     .grafico-container {
       margin-top: 40px;

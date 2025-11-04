@@ -35,7 +35,7 @@ def verifica_blacklist(jwt_header, jwt_payload):
 
 @jwt.revoked_token_loader
 def token_acess_invalid():
-    # O status code para "Unauthorized" é 401.
+    # status code para "Unauthorized" é 401.
     return jsonify({'message': "Voce foi deslogado da sua conta"}), 401
 
 

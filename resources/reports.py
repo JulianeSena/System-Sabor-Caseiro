@@ -28,7 +28,7 @@ class DashboardReports(Resource):
         # Formata para um JSON mais amigável
         cupons_por_dia = [{'data': r.data.format(), 'quantidade': r.quantidade} for r in cupons_por_dia_query]
 
-        # Consulta para os 5 clientes mais ativos
+        #  5 clientes mais ativos
         top_5_clientes_query = (
             banco.session.query(UserModel.nome, func.count(CuponModel.cupom_id).label('total_cupons'))
             .join(CuponModel, UserModel.cliente_id == CuponModel.cliente_id)

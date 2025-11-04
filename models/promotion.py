@@ -13,7 +13,7 @@ class PromotionModel(banco.Model):
     def __init__(self, titulo, descricao=None):
         self.titulo = titulo
         self.descricao = descricao
-        self.is_ativa = False # Promoções sempre começam como inativas
+        self.is_ativa = False # promos iniciam como inativas, tem q ativar pelo gerent
 
     def json(self):
         return {
