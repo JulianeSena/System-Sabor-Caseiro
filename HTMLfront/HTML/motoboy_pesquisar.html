@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sabor Caseiro - Pesquisar Cliente</title>
+  <link rel="stylesheet" href="/HTML front/CSS/motoboy_pesquisa.css">
+</head>
+
+<body>
+  <div class="container">
+
+    <header class="top-bar">
+      <div class="logo">
+        <img src="/HTML front/Image/chef.png" alt="Logo" class="logo-img">
+        <h1><span class="sabor">Sabor</span> <span class="caseiro">Caseiro</span></h1>
+      </div>
+      <div class="user-info">
+        <p><strong>Bem-vindo!</strong><br>Motoboy</p>
+        <div class="user-icon"></div>
+      </div>
+    </header>
+
+    <main class="content">
+      <h2>Pesquisar Cliente</h2>
+
+      <form class="search-form">
+        <label for="cpf">CPF:</label>
+        <input type="text" id="cpf" placeholder="000.000.000-00">
+
+
+        <button type="submit">Pesquisar</button>
+      </form>
+    </main>
+
+  </div>
+
+
+  <script>
+    // Botão Pesquisar
+    document.getElementById('btn-pesquisar').addEventListener('click', async () => {
+      const cpfInput = document.getElementById('cpf').value;
+      const documento = cpfInput.replace(/\D/g, ''); // Remove caracteres não numéricos
+
+      if (!documento) {
+        alert('Por favor, digite um CPF para pesquisar.');
+        return;
+      }
+
+      try {
+        const response = await fetch(`${API_URL}/cliente/busca`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ documento: documento })
+        });
+
+        const result = await response.json();
+
+        if (response.ok) {
+          // Se encontrou, redireciona para a página de detalhes do cliente
+          window.location.href = `motoboy_pesquisa.html?id=${result.cliente_id}`;
+        } else {
+          alert(result.message || 'Cliente não encontrado.');
+        }
+      } catch (error) {
+        console.error('Erro ao pesquisar cliente:', error);
+        alert('Ocorreu um erro de comunicação com o servidor.');
+      }
+    });
+  </script>
+</body>
+
+</html>

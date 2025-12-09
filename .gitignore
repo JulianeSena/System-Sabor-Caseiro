@@ -1,2 +1,10 @@
 .vscode
 /.vscode/*
+dados.py
+banco de dados de refeições.xlsx - Refeicoes.csv
+/migrations
+models/__pycache__
+resources/__pycache__
+/*.pyc
+__pycache__
+__pycache__

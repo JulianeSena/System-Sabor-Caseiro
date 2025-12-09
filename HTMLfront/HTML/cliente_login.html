@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <title>Login Cliente - Sabor Caseiro</title>
+  <link rel="stylesheet" href="/HTML front/CSS/caixa_login.css">
+</head>
+<body>
+  
+  <header>
+    <div class="logo">
+      <img src="/HTML front/Image/chef.png" alt="Logo" class="chef">
+      <h1><span class="sabor">Sabor</span> <span class="caseiro">Caseiro</span></h1>
+    </div>
+  </header>
+
+ 
+  <main>
+    <div class="login-box">
+        <ion-icon name="person-circle-outline" class="user-icon"></ion-icon>
+      <div class="campo">
+        <form id="login-form-cliente">
+          <div class="cpf">
+            <label for="documento">CPF:</label>
+            <input type="text" id="documento" placeholder="000.000.000-00" required>
+          </div>
+
+          <div class="senha">
+            <label for="senha">Senha:</label>
+            <input type="password" id="senha" placeholder="*********" required>
+          </div>
+
+          <button type="submit" class="entrar">Entrar</button>
+        </form>
+      </div>
+    </div>
+  </main>
+  <script>
+    document.getElementById('login-form-cliente').addEventListener('submit', async function(event) {
+      event.preventDefault();
+
+      const documentoInput = document.getElementById('documento').value;
+      const documento = documentoInput.replace(/\D/g, ''); // Remove caracteres não numéricos
+      const senha = document.getElementById('senha').value;
+      const API_URL = 'http://127.0.0.1:5000';
+
+      try {
+        const response = await fetch(`${API_URL}/login/cliente`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ documento, senha }),
+        });
+
+        const result = await response.json();
+
+        if (response.ok) {
+          // Salva o token no localStorage
+          localStorage.setItem('acess_token', result.acess_token);
+          alert('Login realizado com sucesso!');
+          // Redireciona para a página principal do cliente
+          window.location.href = 'cli-principal.html';
+        } else {
+          alert(result.message || 'Documento ou senha incorretos.');
+        }
+      } catch (error) {
+        console.error('Erro ao tentar fazer login:', error);
+        alert('Não foi possível conectar ao servidor. Tente novamente mais tarde.');
+      }
+    });
+  </script>
+  <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+</body>
+</html>

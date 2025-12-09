@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <title>Dashboard Gerente - Sabor Caseiro</title>
+  <link rel="stylesheet" href="/HTML front/CSS/style2.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+  <div class="blur">
+    <header class="cabecalho">
+      <div class="esquerda">
+        <img src="/HTML front/Image/chef.png" alt="Logo" class="logo">
+        <h2>Sabor<br>Caseiro</h2>
+      </div>
+      <div class="direita">
+          <div class="user-info">
+              <h3 id="welcome-message">Bem Vindo!<br>Gerente</h3>
+              <button class="botao-logoff" id="btn-sair">Sair</button>
+          </div>
+          <img src="/HTML front/Image/avatar.png" class="avatar"/>
+      </div>
+    </header>
+
+    <div class="corpo">
+      <h2>Dashboard</h2>
+      <p class="sub">VISÃO GERAL SABOR CASEIRO:</p>
+
+      <div class="cards">
+
+        <div class="gerent">
+          <div class="card-content">
+            <p class="card-title">Receita Total</p>
+            <p class="card-value" id="receita-total">R$ 0,00</p>
+          </div>
+        </div>
+
+        <div class="gerent">
+          <div class="card-content">
+            <p class="card-title">Cupons Emitidos</p>
+            <p class="card-value" id="cupons-emitidos">0</p>
+          </div>
+        </div>
+
+        <div class="gerent">
+          <div class="card-content">
+            <p class="card-title">Total de Clientes</p>
+            <p class="card-value" id="total-clientes">0</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="funcionarios-container">
+        <h3>Gerenciar Funcionários</h3>
+        <button class="promo" id="btn-cadastrar-funcionario">Cadastrar Novo Funcionário</button>
+      </div>
+
+      <div class="promocoes-container">
+        <h3>Gerenciar Promoções</h3>
+        <button class="promo" id="btn-criar-promocao">Criar Nova Promoção</button>
+        <div id="lista-promocoes"></div>
+      </div>
+
+      <div class="grafico-container">
+        <h3>Cupons Emitidos Por Dia</h3>
+        <canvas id="graficoPromocoes"></canvas>
+      </div>
+
+      <div class="grafico-container">
+        <h3>Previsão de 10 Refeições </h3>
+        <div id="previsoes-container">
+          <table class="tabela-previsoes">
+            <thead>
+              <tr>
+                <th>Cliente</th>
+                <th>Refeições Realizadas</th>
+                <th>Faltam</th>
+                <th>Intervalo Médio</th>
+                <th>Data Prevista</th>
+                <th>Confiabilidade</th>
+              </tr>
+            </thead>
+            <tbody id="lista-previsoes">
+              <tr>
+                <td colspan="6" style="text-align: center;">Carregando previsões...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const API_URL = 'http://127.0.0.1:5000';
+      const token = localStorage.getItem('acess_token');
+
+      if (!token) {
+        alert('Acesso não autorizado. Faça o login como gerente.');
+        window.location.href = 'gerente_login.html';
+        return;
+      }
+
+      const headers = {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      };
+
+      function handleAuthError(error, response) {
+        if (response && response.status === 401) {
+          alert('Sessão expirada. Faça o login novamente.');
+          localStorage.removeItem('acess_token');
+          window.location.href = 'gerente_login.html';
+          return true;
+        }
+        return false;
+      }
+
+      // Carregar dados do Dashboard
+      async function fetchDashboardData() {
+        try {
+          const response = await fetch(`${API_URL}/relatorios/dashboard`, { headers });
+          if (!response.ok) throw new Error('Falha ao carregar dados do dashboard.');
+          const data = await response.json();
+          
+          document.getElementById('receita-total').textContent = `R$ ${data.sumario.receita_total.toFixed(2)}`;
+          document.getElementById('cupons-emitidos').textContent = data.sumario.total_cupons_emitidos;
+          document.getElementById('total-clientes').textContent = data.sumario.total_clientes;
+        } catch (error) {
+          console.error('Erro no dashboard:', error);
+          alert(error.message);
+        }
+      }
+
+      // Carregar e exibir promoções
+      async function fetchAndDisplayPromotions() {
+        try {
+          const response = await fetch(`${API_URL}/promocoes`, { headers });
+          if (!response.ok) throw new Error('Falha ao carregar promoções.');
+          
+          const { promocoes } = await response.json();
+          const listaPromocoesDiv = document.getElementById('lista-promocoes');
+          listaPromocoesDiv.innerHTML = ''; // Limpa a lista antes de preencher
+
+          if (promocoes.length === 0) {
+            listaPromocoesDiv.innerHTML = '<p class="sem-promocoes">Nenhuma promoção cadastrada.</p>';
+            return;
+          }
+
+          promocoes.forEach(promocao => {
+            const itemDiv = document.createElement('div');
+            itemDiv.className = `promocao-item ${promocao.is_ativa ? 'ativa' : ''}`;
+
+            const isActive = promocao.is_ativa;
+            const toggleButtonText = isActive ? 'Desativar' : 'Ativar';
+            const toggleButtonClass = isActive ? 'btn-toggle-active active' : 'btn-toggle-active';
+
+            itemDiv.innerHTML = `
+              <div class="promocao-info">
+                <strong>${promocao.titulo} ${isActive ? '<span class="status-ativa">(Ativa)</span>' : ''}</strong>
+                <p>${promocao.descricao}</p>
+              </div>
+              <div class="promocao-actions">
+                <button class="${toggleButtonClass}" data-id="${promocao.promocao_id}" data-active="${isActive}">${toggleButtonText}</button>
+                <button class="btn-delete" data-id="${promocao.promocao_id}">Deletar</button>
+              </div>
+            `;
+
+            itemDiv.querySelector('.btn-toggle-active').addEventListener('click', async (e) => {
+              const id = e.target.dataset.id;
+              const currentStatus = e.target.dataset.active === 'true';
+              
+              const updateResponse = await fetch(`${API_URL}/promocoes/${id}`, {
+                  method: 'PUT',
+                  headers,
+                  body: JSON.stringify({ is_ativa: !currentStatus })
+              });
+
+              if (updateResponse.ok) {
+                  fetchAndDisplayPromotions();
+              } else {
+                  alert('Falha ao atualizar o status da promoção.');
+              }
+            });
+
+            itemDiv.querySelector('.btn-delete').addEventListener('click', async (e) => {
+              const id = e.target.dataset.id;
+              if (confirm('Tem certeza que deseja deletar esta promoção?')) {
+                const deleteResponse = await fetch(`${API_URL}/promocoes/${id}`, { method: 'DELETE', headers });
+                const result = await deleteResponse.json();
+                alert(result.message);
+                if (deleteResponse.ok) {
+                  fetchAndDisplayPromotions();
+                }
+              }
+            });
+
+            listaPromocoesDiv.appendChild(itemDiv);
+          });
+        } catch (error) {
+          console.error('Erro ao buscar promoções:', error);
+          document.getElementById('lista-promocoes').innerHTML = '<p class="sem-promocoes">Erro ao carregar promoções.</p>';
+        }
+      }
+
+      // Criar nova promoção
+      document.getElementById('btn-criar-promocao').addEventListener('click', async () => {
+        const titulo = prompt("Digite o título da nova promoção:");
+        const descricao = prompt("Digite a descrição da promoção:");
+
+        if (titulo && descricao) {
+          try {
+            const response = await fetch(`${API_URL}/promocoes`, {
+              method: 'POST',
+              headers,
+              body: JSON.stringify({ titulo, descricao })
+            });
+            const result = await response.json();
+            alert(response.ok ? 'Promoção criada com sucesso!' : `Erro: ${result.message}`);
+            if (response.ok) {
+              fetchAndDisplayPromotions();
+            }
+          } catch (error) {
+            alert('Erro ao criar promoção.');
+          }
+        }
+      });
+
+      // cadastro funcionario
+      document.getElementById('btn-cadastrar-funcionario').addEventListener('click', () => {
+        window.location.href = 'gerente_cadastro.html';
+      });
+
+           async function gerarGraficoPromocoes() {
+        try {
+          const response = await fetch(`${API_URL}/relatorios/dashboard`, { headers });
+          if (!response.ok) throw new Error('Falha ao carregar dados do dashboard.');
+          
+          const data = await response.json();
+          const ctx = document.getElementById('graficoPromocoes').getContext('2d');
+
+          if (window.promocoesChart) {
+            window.promocoesChart.destroy();
+          }
+
+          // Verifica se há dados de cupons por dia
+          const cupons_por_dia = data.cupons_por_dia || [];
+          
+          if (cupons_por_dia.length === 0) {
+            ctx.font = "16px Arial";
+            ctx.fillText("Nenhum cupom registrado neste mês.", 20, 50);
+            return;
+          }
+
+          const labels = cupons_por_dia.map(item => {
+            const date = new Date(item.data);
+            return date.toLocaleDateString('pt-BR', { 
+              day: '2-digit', 
+              month: '2-digit' 
+            });
+          });
+          const cupons = cupons_por_dia.map(item => item.quantidade);
+          const cores = cupons.map(() => 'rgba(75, 192, 192, 0.6)');
+
+          window.promocoesChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+              labels,
+              datasets: [{
+                label: 'Cupons emitidos por dia',
+                data: cupons,
+                backgroundColor: cores,
+                borderColor: 'rgba(0,0,0,0.2)',
+                borderWidth: 1
+              }]
+            },
+            options: {
+              responsive: true,
+              plugins: {
+                legend: { position: 'top' },
+                title: {
+                  display: true,
+                  text: 'Desempenho dos Cupons por Dia'
+                }
+              },
+              scales: {
+                y: { beginAtZero: true }
+              }
+            }
+          });
+        } catch (error) {
+          console.error('Erro ao gerar gráfico:', error);
+        }
+      }
+
+      async function gerarGraficoClientes() {
+        try {
+          const response = await fetch(`${API_URL}/relatorios/dashboard`, { headers });
+          if (!response.ok) throw new Error('Falha ao carregar dados do dashboard.');
+          
+          const data = await response.json();
+          const ctx = document.getElementById('graficoClientes').getContext('2d');
+
+          if (window.clientesChart) {
+            window.clientesChart.destroy();
+          }
+
+          // Verifica se há dados de clientes
+          const top_5_clientes = data.top_5_clientes || [];
+          
+          if (top_5_clientes.length === 0) {
+            ctx.font = "16px Arial";
+            ctx.fillText("Nenhum cliente ativo registrado.", 20, 50);
+            return;
+          }
+
+          const labels = top_5_clientes.map(cliente => cliente.nome);
+          const cupons = top_5_clientes.map(cliente => cliente.total_cupons);
+
+          window.clientesChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+              labels,
+              datasets: [{
+                label: 'Total de cupons por cliente',
+                data: cupons,
+                backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                borderColor: 'rgba(54, 162, 235, 1)',
+                borderWidth: 3,
+                fill: true,
+                tension: 0.4,
+                pointBackgroundColor: 'rgba(54, 162, 235, 1)',
+                pointBorderColor: '#fff',
+                pointBorderWidth: 2,
+                pointRadius: 6
+              }]
+            },
+            options: {
+              responsive: true,
+              plugins: {
+                legend: { position: 'top' },
+                title: {
+                  display: true,
+                  text: 'Ranking dos Clientes Mais Ativos'
+                }
+              },
+              scales: {
+                y: { beginAtZero: true }
+              }
+            }
+          });
+        } catch (error) {
+          console.error('Erro ao gerar gráfico de clientes:', error);
+        }
+      }
+
+     async function carregarPrevisoes() {
+        try {
+          const response = await fetch(`${API_URL}/relatorios/previsao_refeicoes`, { headers });
+          if (handleAuthError(null, response)) return;
+          if (!response.ok) throw new Error('Falha ao carregar previsões.');
+          
+          const data = await response.json();
+          const previsoes = data.previsoes_proximas || [];
+          const listaPrevisoes = document.getElementById('lista-previsoes');
+          
+          if (previsoes.length === 0) {
+            listaPrevisoes.innerHTML = '<tr><td colspan="6" style="text-align: center;">Nenhuma previsão disponível.</td></tr>';
+            return;
+          }
+
+          listaPrevisoes.innerHTML = '';
+          
+          previsoes.forEach(prev => {
+            const row = document.createElement('tr');
+            
+            // Determinar cor da confiabilidade
+            let corConfiabilidade = '';
+            if (prev.confiabilidade === 'Alta') corConfiabilidade = 'style="color: green; font-weight: bold;"';
+            else if (prev.confiabilidade === 'Média') corConfiabilidade = 'style="color: orange; font-weight: bold;"';
+            else corConfiabilidade = 'style="color: red; font-weight: bold;"';
+            
+            row.innerHTML = `
+              <td><strong>${prev.cliente_nome}</strong></td>
+              <td style="text-align: center;">${prev.refeicoes_realizadas}/10</td>
+              <td style="text-align: center;">${prev.refeicoes_faltantes}</td>
+              <td style="text-align: center;">${prev.intervalo_medio_dias}</td>
+              <td style="text-align: center; font-weight: bold; color: #007bff;">${prev.data_previsao}</td>
+              <td ${corConfiabilidade}>${prev.confiabilidade}</td>
+            `;
+            
+            listaPrevisoes.appendChild(row);
+          });
+
+          // Gerar gráfico de previsões
+          gerarGraficoPrevisoes(data);
+        } catch (error) {
+          console.error('Erro ao carregar previsões:', error);
+          document.getElementById('lista-previsoes').innerHTML = '<tr><td colspan="6">Erro ao carregar previsões.</td></tr>';
+        }
+      }
+
+      // Gerar gráfico de previsões
+      async function gerarGraficoPrevisoes(data) {
+        try {
+          const ctx = document.getElementById('graficoPrevisoes').getContext('2d');
+          
+          if (window.previsoesChart) {
+            window.previsoesChart.destroy();
+          }
+
+          const previsoes = data.previsoes_proximas || [];
+          
+          if (previsoes.length === 0) {
+            ctx.font = "16px Arial";
+            ctx.fillText("Sem dados de previsão.", 20, 50);
+            return;
+          }
+
+          const labels = previsoes.map(p => p.cliente_nome);
+          const refeicoes_realizadas = previsoes.map(p => p.refeicoes_realizadas);
+          const refeicoes_faltantes = previsoes.map(p => p.refeicoes_faltantes);
+
+          window.previsoesChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+              labels,
+              datasets: [
+                {
+                  label: 'Refeições Realizadas',
+                  data: refeicoes_realizadas,
+                  backgroundColor: 'rgba(75, 192, 192, 0.7)',
+                  borderColor: 'rgba(75, 192, 192, 1)',
+                  borderWidth: 1
+                },
+                {
+                  label: 'Refeições Faltantes',
+                  data: refeicoes_faltantes,
+                  backgroundColor: 'rgba(255, 193, 7, 0.7)',
+                  borderColor: 'rgba(255, 193, 7, 1)',
+                  borderWidth: 1
+                }
+              ]
+            },
+            options: {
+              responsive: true,
+              indexAxis: 'y',
+              plugins: {
+                legend: { position: 'top' },
+                title: {
+                  display: true,
+                  text: 'Progresso de Refeições - Top Clientes'
+                }
+              },
+              scales: {
+                x: { 
+                  beginAtZero: true,
+                  stacked: true,
+                  max: 10
+                }
+              }
+            }
+          });
+        } catch (error) {
+          console.error('Erro ao gerar gráfico de previsões:', error);
+        }
+      }
+
+
+      // Logout
+      document.getElementById('btn-sair').addEventListener('click', () => {
+        localStorage.removeItem('acess_token');
+        window.location.href = 'gerente_login.html';
+      });
+
+      // Inicialização
+      fetchDashboardData();
+      fetchAndDisplayPromotions();
+      gerarGraficoPromocoes();
+      gerarGraficoClientes();
+      carregarPrevisoes();
+    });
+  </script>
+
+  
+  <style>
+    .grafico-container {
+      margin-top: 40px;
+      background: #fff;
+      padding: 25px;
+      border-radius: 12px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+  </style>
+
+</body>
+</html>

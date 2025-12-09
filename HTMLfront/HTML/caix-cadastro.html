@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="/HTML front/CSS/style4.css" />
+    <title>Cadastro de Cliente</title>
+</head>
+<body>
+    <div class="blur">
+
+        <div class="cabecalho">
+            <div class="esquerda">
+                <img src="/HTML front/Image/chef.png" class="logo"/>
+                <h2>Sabor<br>Caseiro</h2>
+            </div>
+
+            <div class="direita">
+                <div class="user-info">
+                    <h3>Bem Vindo!<br>Caixa</h3>
+                    <button class="botao-logoff" id="btn-sair">Sair</button>
+                </div>
+                <img src="/HTML front/Image/avatar.png" class="avatar"/>
+            </div>
+        </div>
+
+        <div class="corpo">
+            
+            <img src="/HTML front/Image/avatar.png" class="avatar-central" />
+            <form id="cadastro-form">   
+                <div class="pesquisa">
+                    <div class="campo-horizontal">
+                        <label for="documento">CPF:</label>
+                        <input type="text" id="cpf" placeholder="000.000.000-00" class="input-pesquisa"/>
+                    </div>
+                    <div class="campo-horizontal">
+                        <label for="nome">Nome:</label>
+                        <input type="text" id="nome" placeholder="Nome Completo do Cliente" class="input-pesquisa"/>
+                    </div>
+                    <div class="campo-horizontal">
+                        <label for="email">Email:</label>
+                        <input type="text" id="email"  placeholder="cliente@email.com" class="input-pesquisa"/>
+                    </div>
+                    <div class="campo-horizontal">
+                        <label for="telefone">Telefone:</label>
+                        <input type="text" id="telefone" placeholder="(53) 99999-0000" class="input-pesquisa"/>
+                    </div>
+                    <div class="campo-horizontal">
+                        <label for="senha">Senha:</label>
+                        <input type="password" id="senha" placeholder="Crie uma senha para o cliente" class="input-pesquisa" required/>
+                    </div>
+                </div>
+
+                <div class="botoes">
+                    <button type="button" id="btn-voltar" class="botao-cinza">Voltar</button>
+                    <button type="submit" class="botao-cinza" id="btn-cadastrar">Cadastrar</button>
+                </div>
+            </form>     
+        </div>
+    </div>
+    <script>
+        
+        document.getElementById('cadastro-form').addEventListener('submit', async function(event) {
+            event.preventDefault();
+
+            // Coleta os dados dos campos do formulário
+            const nome = document.getElementById('nome').value;
+            const email = document.getElementById('email').value;
+            const telefone = document.getElementById('telefone').value.replace(/\D/g, ''); // Remove caracteres não numéricos do telefone
+            const documento = document.getElementById('cpf').value.replace(/\D/g, ''); // CORRIGIDO: id do campo é 'cpf'
+            const senha = document.getElementById('senha').value;
+
+            // Recupera o token de acesso do localStorage (assumindo que foi salvo lá no login)
+            const token = localStorage.getItem('acess_token');
+
+            if (!token) {
+                alert('Erro de autenticação. Faça o login novamente.');
+                window.location.href = 'caixa_login.html';
+                return;
+            }
+
+            try {
+                const response = await fetch('http://127.0.0.1:5000/cadastro', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ nome, email, telefone, documento, senha })
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    alert('Cliente cadastrado com sucesso!');
+                    // Redireciona para a página de pesquisa principal após o cadastro
+                    window.location.href = 'caix-principal.html';
+                } else {
+                    // Exibe a mensagem de erro retornada pela API
+                    alert(`Erro ao cadastrar: ${result.message}`);
+                }
+            } catch (error) {
+                console.error('Erro na requisição:', error);
+                alert('Ocorreu um erro de comunicação com o servidor. Tente novamente.');
+            }
+        });
+
+        // Funcionalidade do botão Voltar
+        document.getElementById('btn-voltar').addEventListener('click', () => {
+            window.history.back(); // Volta para a página anterior
+        });
+
+        // Funcionalidade do botão Sair
+        document.getElementById('btn-sair').addEventListener('click', () => {
+            localStorage.removeItem('acess_token');
+            window.location.href = 'caixa_login.html';
+        });
+    </script>
+</body>
+</html>

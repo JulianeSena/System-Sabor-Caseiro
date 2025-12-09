@@ -1,0 +1,326 @@
+body {
+    background-image: url('mesa1.png');
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center;
+    margin: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.blur {
+    width: 100%;
+    height: 100%;
+    backdrop-filter: blur(2px);
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+}
+
+.cabecalho {
+    background-color: #855A3D;
+    width: 100%;
+    height: 120px;
+    display: flex;
+    align-items: center; 
+    justify-content: space-between;
+    padding: 0 20px;
+    border-bottom-left-radius: 4%;
+    border-bottom-right-radius: 4%;
+}
+
+.esquerda {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.logo {
+    width: 120px;
+    height: 120px;
+}
+
+.esquerda h2 {
+    font-size: 2.5rem;
+    font-weight: bold;
+    background: linear-gradient(135deg, #FFD400, #FF0000);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent; 
+    background-clip: text;
+    color: transparent;
+}
+
+.direita {
+    display: flex;
+    align-items: center;
+}
+
+.user-info {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 5px;
+    margin-right: 10px;
+}
+
+.user-info h3 {
+    color: #fff;
+    font-size: 1rem;
+    margin: 0;
+}
+
+.botao-logoff {
+    background: linear-gradient(135deg, #FFD400, #FF0000);
+    color: white;
+    font-size: 1rem;
+    font-weight: bold;
+    padding: 8px 18px;
+    border: none;
+    border-radius: 20px;
+    cursor: pointer;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    transition: all 0.3s ease;
+}
+
+.botao-logoff:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+    background: linear-gradient(90deg, #FF0000, #FFD400);
+}
+
+.avatar {
+    width: 120px;
+    height: 120px;
+    margin-left: 5px;
+}
+
+.corpo {
+    background-color: #201F17;
+    opacity: 0.85;
+    height: 100%;
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    margin: 20px 10%;
+    padding: 15px;
+    flex: 1;
+    text-align: center;
+    box-sizing: border-box;
+}
+
+.corpo h2 {
+    color: #fff;
+    width: 400px;
+}
+
+.result {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 20px;
+}
+#texto-desconto {
+    background-color: #201F17;
+}
+
+.result h2 {
+    font-size: 2.5rem;
+    font-weight: bold;
+    background: linear-gradient(135deg, #FFD400, #FF0000);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent; 
+    background-clip: text;
+    color: transparent;
+}
+
+table {
+    border-collapse: collapse;
+    margin-top: 15px;
+}
+
+tr {
+    background-color: #fff;
+}
+
+td {
+    padding: 25px;
+}
+
+.tabela {
+    border: 1px solid #333;
+    border-collapse: collapse;
+    padding: 10px;
+}
+
+footer {
+    width: 100%;
+    padding: 20px 0;
+    margin-top: auto; 
+    text-align: center;
+}
+
+.canais {
+    display: flex;
+    justify-content: space-evenly;
+    align-items: flex-start;
+    width: 80%;
+    margin: 0 auto; 
+    gap: 20px; 
+    flex-wrap: wrap; 
+}
+
+.canais h4 {
+    color: #fff;
+    font-size: 1rem; 
+    line-height: 1.5; 
+}
+
+.promocoes-container {
+    width: 100%;
+    max-width: 800px;
+    margin-top: 30px;
+    color: #fff;
+}
+
+.promocoes-container h3 {
+    font-size: 1.5rem;
+    border-bottom: 2px solid #FFD400;
+    padding-bottom: 5px;
+    margin-bottom: 15px;
+}
+
+.promo {
+    background: linear-gradient(135deg, #FFD400, #FF0000);
+    color: white;
+    font-size: 1rem;
+    font-weight: bold;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 20px;
+    cursor: pointer;
+    margin-bottom: 20px;
+}
+
+.promocao-item {
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.promocao-item.ativa {
+    border-left: 5px solid #2ecc71; /* Borda verde para itens ativos */
+}
+
+.promocao-info strong .status-ativa {
+    color: #2ecc71;
+    font-size: 0.9rem;
+    margin-left: 8px;
+}
+
+.promocao-info p {
+    margin: 5px 0 0 0;
+    color: #ccc;
+}
+
+.btn-delete {
+    background-color: #c0392b;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.promocao-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.btn-toggle-active {
+    background-color: #27ae60; /* Verde para 'Ativar' */
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.btn-toggle-active.active {
+    background-color: #f39c12; /* Laranja para 'Desativar' */
+}
+
+.sem-promocoes {
+    color: #aaa;
+    font-style: italic;
+}
+
+.promocao-banner {
+    width: 95%;
+    background: linear-gradient(135deg, #FFD400, #FF0000);
+    color: white;
+    padding: 15px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    text-align: center;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+}
+
+.promocao-banner h3 {
+    margin: 0 0 5px 0;
+    font-size: 1.4rem;
+    text-transform: uppercase;
+}
+
+.promocao-banner p {
+    margin: 0;
+    font-size: 1rem;
+}
+
+ .grafico-container {
+      margin-top: 40px;
+      background: #fff;
+      padding: 25px;
+      border-radius: 12px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+
+    #previsoes-container {
+      overflow-x: auto;
+      margin-top: 20px;
+    }
+
+    .tabela-previsoes {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+
+    .tabela-previsoes thead {
+      background-color: #f5f5f5;
+      font-weight: bold;
+    }
+
+    .tabela-previsoes th,
+    .tabela-previsoes td {
+      padding: 12px;
+      text-align: left;
+      border-bottom: 1px solid #ddd;
+    }
+
+    .tabela-previsoes tbody tr:hover {
+      background-color: #f9f9f9;
+    }
+
+    .tabela-previsoes th {
+      background-color: #8b5a2b;
+      color: white;
+      font-weight: bold;
+    }
