@@ -41,8 +41,7 @@
     // Botão Pesquisar
     document.getElementById('btn-pesquisar').addEventListener('click', async () => {
       const cpfInput = document.getElementById('cpf').value;
-      const documento = cpfInput.replace(/\D/g, ''); // Remove caracteres não numéricos
-
+      const documento = cpfInput.replace(/\D/g, ''); 
       if (!documento) {
         alert('Por favor, digite um CPF para pesquisar.');
         return;
@@ -61,7 +60,7 @@
         const result = await response.json();
 
         if (response.ok) {
-          // Se encontrou, redireciona para a página de detalhes do cliente
+       
           window.location.href = `motoboy_pesquisa.html?id=${result.cliente_id}`;
         } else {
           alert(result.message || 'Cliente não encontrado.');

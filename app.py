@@ -1,5 +1,5 @@
 from flask import Flask, jsonify
-from flask_restful import Api, Resource
+from flask_restful import Api
 from flask_jwt_extended import JWTManager
 from resources.user import User, UserRegister, UserLogin, AdminLogin, UserLogout, UserSearch
 from resources.reports import DashboardReports, PrevisaoRefeicoes
@@ -9,7 +9,6 @@ from blacklist import BLACKLIST
 from sql_alchemy import banco
 from flask_cors import CORS
 from flask_migrate import Migrate
-#from resources.refeicao import RefeicaoEstatisticasResource
 
 
 

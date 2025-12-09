@@ -63,7 +63,7 @@
     </div>
 
     <script>
-        // Função para buscar e preencher os dados do cliente na tela
+        
         async function carregarDadosCliente() {
             const urlParams = new URLSearchParams(window.location.search);
             const clienteId = urlParams.get('id');
@@ -71,38 +71,38 @@
 
             if (!clienteId || !token) {
                 alert('Cliente não especificado ou erro de autenticação.');
-                window.location.href = 'caix-principal.html'; // Volta para a pesquisa
+                window.location.href = 'caix-principal.html';   
                 return;
             }
 
             const API_URL = 'http://127.0.0.1:5000';
 
             try {
-                // 1. Buscar dados do cliente
+                
                 const resCliente = await fetch(`${API_URL}/cliente/${clienteId}`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 if (!resCliente.ok) throw new Error('Falha ao buscar dados do cliente.');
                 const cliente = await resCliente.json();
 
-                // 2. Buscar cupons (compras) do cliente
+                
                 const resCupons = await fetch(`${API_URL}/cliente/${clienteId}/cupons`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 if (!resCupons.ok) throw new Error('Falha ao buscar cupons do cliente.');
                 const { cupons } = await resCupons.json();
 
-                // 3. Preencher a página com os dados
+                    
                 document.querySelector('.nome-cliente').textContent = cliente.nome;
                 document.getElementById('documento').value = cliente.documento;
                 document.getElementById('email').value = cliente.email;
                 document.getElementById('telefone').value = cliente.telefone;
 
-                // 4. Atualizar o plano fidelidade (assumindo 10 compras para o cupom)
+                    
                 const totalCupons = cupons.length % 10;
                 document.querySelector('.celula-plano').textContent = `${totalCupons}/10`;
                 if (totalCupons === 0 && cupons.length > 0) {
-                    document.getElementById('btn-cupom').disabled = false; // Habilita o botão de cupom
+                    document.getElementById('btn-cupom').disabled = false;  
                 }
 
             } catch (error) {
@@ -111,25 +111,25 @@
             }
         }
 
-        // Adiciona os eventos aos botões
+        
         document.addEventListener('DOMContentLoaded', () => {
-            carregarDadosCliente(); // Carrega os dados assim que a página é aberta
+            carregarDadosCliente();     
 
             const urlParams = new URLSearchParams(window.location.search);
             const clienteId = urlParams.get('id');
             const token = localStorage.getItem('acess_token');
             const API_URL = 'http://127.0.0.1:5000';
 
-            // Botão Voltar
+                
             document.getElementById('btn-voltar').addEventListener('click', () => window.history.back());
 
-            // Botão Sair
+            
             document.getElementById('btn-sair').addEventListener('click', () => {
                 localStorage.removeItem('acess_token');
                 window.location.href = 'login-admin.html';
             });
 
-            // Botão Cadastrar Compra - aqui ele coloca um evento na tela que o caixa digita o valor do cupom e joga no banco
+                
             document.getElementById('btn-cadastrar-compra').addEventListener('click', async () => {
                 const preco = prompt("Digite o valor da compra (ex: 45.50):");
                 if (preco && !isNaN(parseFloat(preco))) {
@@ -140,13 +140,13 @@
                     });
                     const result = await res.json();
                     alert(res.ok ? 'Compra cadastrada com sucesso!' : `Erro: ${result.message}`);
-                    if (res.ok) location.reload(); // Recarrega a página para atualizar os dados
+                    if (res.ok) location.reload();  
                 } else if (preco) {
                     alert("Valor inválido. Por favor, insira um número.");
                 }
             });
 
-            // Botão Atualizar Dados
+            
             document.getElementById('btn-atualizar').addEventListener('click', async () => {
                 const email = document.getElementById('email').value;
                 const telefone = document.getElementById('telefone').value;

@@ -62,14 +62,14 @@
         document.getElementById('cadastro-form').addEventListener('submit', async function(event) {
             event.preventDefault();
 
-            // Coleta os dados dos campos do formulário
+          
             const nome = document.getElementById('nome').value;
             const email = document.getElementById('email').value;
-            const telefone = document.getElementById('telefone').value.replace(/\D/g, ''); // Remove caracteres não numéricos do telefone
-            const documento = document.getElementById('cpf').value.replace(/\D/g, ''); // CORRIGIDO: id do campo é 'cpf'
+            const telefone = document.getElementById('telefone').value.replace(/\D/g, ''); 
+            const documento = document.getElementById('cpf').value.replace(/\D/g, ''); 
             const senha = document.getElementById('senha').value;
 
-            // Recupera o token de acesso do localStorage (assumindo que foi salvo lá no login)
+            
             const token = localStorage.getItem('acess_token');
 
             if (!token) {
@@ -92,10 +92,10 @@
 
                 if (response.ok) {
                     alert('Cliente cadastrado com sucesso!');
-                    // Redireciona para a página de pesquisa principal após o cadastro
+                   
                     window.location.href = 'caix-principal.html';
                 } else {
-                    // Exibe a mensagem de erro retornada pela API
+                
                     alert(`Erro ao cadastrar: ${result.message}`);
                 }
             } catch (error) {
@@ -104,12 +104,12 @@
             }
         });
 
-        // Funcionalidade do botão Voltar
+       
         document.getElementById('btn-voltar').addEventListener('click', () => {
-            window.history.back(); // Volta para a página anterior
+            window.history.back(); 
         });
 
-        // Funcionalidade do botão Sair
+     
         document.getElementById('btn-sair').addEventListener('click', () => {
             localStorage.removeItem('acess_token');
             window.location.href = 'caixa_login.html';

@@ -37,7 +37,7 @@
   </main>
     <script>
     document.getElementById('login-form').addEventListener('submit', async function(event) {
-      event.preventDefault(); // Impede o recarregamento da página
+      event.preventDefault(); 
 
       const nome = document.getElementById('nome').value;
       const senha = document.getElementById('senha').value;
@@ -55,10 +55,10 @@
         const result = await response.json();
 
         if (response.ok) {
-          // Salva o token no localStorage
+        
           localStorage.setItem('acess_token', result.acess_token);
           alert('Login realizado com sucesso!');
-          // Redireciona para a página principal do caixa
+         
           window.location.href = 'gerente_inicio.html';
         } else {
           alert(result.message || 'Nome ou senha incorretos.');

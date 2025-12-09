@@ -118,7 +118,7 @@
         return false;
       }
 
-      // Carregar dados do Dashboard
+    
       async function fetchDashboardData() {
         try {
           const response = await fetch(`${API_URL}/relatorios/dashboard`, { headers });
@@ -134,7 +134,7 @@
         }
       }
 
-      // Carregar e exibir promoções
+     
       async function fetchAndDisplayPromotions() {
         try {
           const response = await fetch(`${API_URL}/promocoes`, { headers });
@@ -142,7 +142,7 @@
           
           const { promocoes } = await response.json();
           const listaPromocoesDiv = document.getElementById('lista-promocoes');
-          listaPromocoesDiv.innerHTML = ''; // Limpa a lista antes de preencher
+          listaPromocoesDiv.innerHTML = ''; 
 
           if (promocoes.length === 0) {
             listaPromocoesDiv.innerHTML = '<p class="sem-promocoes">Nenhuma promoção cadastrada.</p>';
@@ -205,7 +205,7 @@
         }
       }
 
-      // Criar nova promoção
+    
       document.getElementById('btn-criar-promocao').addEventListener('click', async () => {
         const titulo = prompt("Digite o título da nova promoção:");
         const descricao = prompt("Digite a descrição da promoção:");
@@ -228,7 +228,7 @@
         }
       });
 
-      // cadastro funcionario
+      
       document.getElementById('btn-cadastrar-funcionario').addEventListener('click', () => {
         window.location.href = 'gerente_cadastro.html';
       });
@@ -245,7 +245,7 @@
             window.promocoesChart.destroy();
           }
 
-          // Verifica se há dados de cupons por dia
+      
           const cupons_por_dia = data.cupons_por_dia || [];
           
           if (cupons_por_dia.length === 0) {
@@ -307,7 +307,7 @@
             window.clientesChart.destroy();
           }
 
-          // Verifica se há dados de clientes
+    
           const top_5_clientes = data.top_5_clientes || [];
           
           if (top_5_clientes.length === 0) {
@@ -376,7 +376,7 @@
           previsoes.forEach(prev => {
             const row = document.createElement('tr');
             
-            // Determinar cor da confiabilidade
+        
             let corConfiabilidade = '';
             if (prev.confiabilidade === 'Alta') corConfiabilidade = 'style="color: green; font-weight: bold;"';
             else if (prev.confiabilidade === 'Média') corConfiabilidade = 'style="color: orange; font-weight: bold;"';
@@ -394,7 +394,7 @@
             listaPrevisoes.appendChild(row);
           });
 
-          // Gerar gráfico de previsões
+     
           gerarGraficoPrevisoes(data);
         } catch (error) {
           console.error('Erro ao carregar previsões:', error);
@@ -402,7 +402,7 @@
         }
       }
 
-      // Gerar gráfico de previsões
+    
       async function gerarGraficoPrevisoes(data) {
         try {
           const ctx = document.getElementById('graficoPrevisoes').getContext('2d');

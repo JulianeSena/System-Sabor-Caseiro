@@ -40,7 +40,7 @@
       event.preventDefault();
 
       const documentoInput = document.getElementById('documento').value;
-      const documento = documentoInput.replace(/\D/g, ''); // Remove caracteres não numéricos
+      const documento = documentoInput.replace(/\D/g, ''); 
       const senha = document.getElementById('senha').value;
       const API_URL = 'http://127.0.0.1:5000';
 
@@ -56,10 +56,8 @@
         const result = await response.json();
 
         if (response.ok) {
-          // Salva o token no localStorage
           localStorage.setItem('acess_token', result.acess_token);
           alert('Login realizado com sucesso!');
-          // Redireciona para a página principal do cliente
           window.location.href = 'cli-principal.html';
         } else {
           alert(result.message || 'Documento ou senha incorretos.');
